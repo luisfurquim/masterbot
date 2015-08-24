@@ -3,6 +3,7 @@ package masterbot
 import (
    "os"
    "fmt"
+   "sync"
    "io/ioutil"
 //   "net/http"
    "golang.org/x/crypto/ssh"
@@ -12,6 +13,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    var err        error
    var sshclient *ssh.Client
    var session   *ssh.Session
+   var wg         sync.WaitGroup
 
    err = cfg.PingAt()
    if err == nil {
@@ -36,15 +38,19 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    }
    defer session.Close()
 
+   wg.Add(4)
+
    go func() {
+      defer wg.Done()
       Goose.Logf(6,"Sending config")
       w, _ := session.StdinPipe()
       defer w.Close()
-      fmt.Fprintf(w, "%s", config)
+      fmt.Fprintf(w, "%s\n", config)
    }()
 
 
    go func() {
+      defer wg.Done()
       Goose.Logf(6,"getting stdout")
       w, _ := session.StdoutPipe()
 
@@ -57,6 +63,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    }()
 
    go func() {
+      defer wg.Done()
       Goose.Logf(6,"getting stderr")
       w, _ := session.StderrPipe()
 
@@ -71,11 +78,14 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    Goose.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
 
    if err = session.Start(fmt.Sprintf("%s%c%s",cfg.BinDir, os.PathSeparator, cfg.BinName)); err != nil {
+      defer wg.Done()
       Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
 
    Goose.Logf(6,"Bot %s started successfully",cfg.Id)
+
+   wg.Wait()
 
    return nil
 }
