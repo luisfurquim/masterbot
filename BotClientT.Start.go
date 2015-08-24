@@ -42,7 +42,7 @@ func (s *BotClientT) Start(botId string, config []byte, cfg *ConfigT, debugLevel
    }
    defer session.Close()
 
-   wg.Add(2)
+   wg.Add(1)
 
    go func() {
       defer wg.Done()
@@ -52,14 +52,13 @@ func (s *BotClientT) Start(botId string, config []byte, cfg *ConfigT, debugLevel
    }()
 
    if err = session.Start(fmt.Sprintf("%s%c%s -v %d",s.BinDir, os.PathSeparator, s.BinName, debugLevel)); err != nil {
-      defer wg.Done()
       Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
 
-   s.Status = BotStatRunning
-
    wg.Wait()
+
+   s.Status = BotStatRunning
 
    return nil
 }

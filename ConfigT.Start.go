@@ -38,7 +38,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    }
    defer session.Close()
 
-   wg.Add(4)
+   wg.Add(1)
 
    go func() {
       defer wg.Done()
@@ -50,7 +50,6 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
 
 
    go func() {
-      defer wg.Done()
       Goose.Logf(6,"getting stdout")
       w, _ := session.StdoutPipe()
 
@@ -63,7 +62,6 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    }()
 
    go func() {
-      defer wg.Done()
       Goose.Logf(6,"getting stderr")
       w, _ := session.StderrPipe()
 
@@ -77,15 +75,14 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
 
    Goose.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
 
-   if err = session.Start(fmt.Sprintf("%s%c%s",cfg.BinDir, os.PathSeparator, cfg.BinName)); err != nil {
-      defer wg.Done()
+   if err = session.Start(fmt.Sprintf("%s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)); err != nil {
       Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
 
-   Goose.Logf(6,"Bot %s started successfully",cfg.Id)
-
    wg.Wait()
+
+   Goose.Logf(6,"Bot %s started successfully",cfg.Id)
 
    return nil
 }
