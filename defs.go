@@ -69,3 +69,12 @@ const (
 )
 
 
+type ServiceT struct {
+   // end point for monitoring
+   stop    bool `method:"GET" path:"/stop" ok:"Ends service operation"`
+
+   botId   string
+   onStop  func()
+   appcfg *ConfigT
+}
+
