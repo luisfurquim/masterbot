@@ -13,7 +13,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    var err         error
    var sshclient  *ssh.Client
    var session    *ssh.Session
-   var wg          sync.WaitGroup
+   var wg, subwg   sync.WaitGroup
    var host        string
    var multiErr  []error
    var botInstance int
@@ -29,9 +29,13 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
    cfg.SshClientConfig.User = cfg.SysUser
 
 
+   wg.Add(len(cfg.Host))
+
    multiErr = make([]error,len(cfg.Host))
    for botInstance, host = range cfg.Host {
       go func(instance int) {
+         defer wg.Done()
+
          sshclient, err = ssh.Dial("tcp", host + ":22", cfg.SshClientConfig)
          if err != nil {
             Goose.Logf(1,"%s (%s)",ErrDialingToBot,err)
@@ -47,10 +51,10 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
          }
          defer session.Close()
 
-         wg.Add(1)
+         subwg.Add(1)
 
          go func() {
-            defer wg.Done()
+            defer subwg.Done()
             Goose.Logf(6,"Sending config")
             w, _ := session.StdinPipe()
             defer w.Close()
@@ -90,11 +94,12 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
             return
          }
 
-         wg.Wait()
+         subwg.Wait()
 
-         Goose.Logf(6,"Bot %s started successfully",cfg.Id)
       }(botInstance)
    }
+
+   wg.Wait()
 
    for _, err = range multiErr {
       if err != nil {
@@ -102,5 +107,6 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
       }
    }
 
+   Goose.Logf(2,"Bot %s started successfully",cfg.Id)
    return nil
 }
