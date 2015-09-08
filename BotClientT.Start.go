@@ -8,7 +8,7 @@ import (
    "golang.org/x/crypto/ssh"
 )
 
-func (s *BotClientT) Start(botId string, config []byte, cfg *ConfigT, debugLevel int) error {
+func (s *BotClientT) Start(botId string, botInstance int, config []byte, cfg *ConfigT, debugLevel int) error {
    var err        error
    var sshclient *ssh.Client
    var session   *ssh.Session
@@ -18,9 +18,9 @@ func (s *BotClientT) Start(botId string, config []byte, cfg *ConfigT, debugLevel
       return nil
    }
 
-   err = s.PingAt(botId, cfg)
+   err = s.PingAt(botId, botInstance, cfg)
    if err == nil {
-      Goose.Logf(2,"bot %s is alive",botId)
+      Goose.Logf(2,"bot %s@%s is alive",botId,s.Host[botInstance])
       return nil
    }
 
@@ -29,7 +29,7 @@ func (s *BotClientT) Start(botId string, config []byte, cfg *ConfigT, debugLevel
    s.Status = BotStatUnreachable
    cfg.SshClientConfig.User = s.SysUser
 
-   sshclient, err = ssh.Dial("tcp", s.Host + ":22", cfg.SshClientConfig)
+   sshclient, err = ssh.Dial("tcp", s.Host[botInstance] + ":22", cfg.SshClientConfig)
    if err != nil {
       Goose.Logf(1,"%s (%s)",ErrDialingToBot,err)
       return ErrDialingToBot

@@ -34,7 +34,7 @@ type BotClientT struct {
    BinName      string       `json:"binname"`
    Listen       string       `json:"listen"`
    CrlListen    string       `json:"crllisten"`
-   Host         string       `json:"host"`
+   Host       []string       `json:"host"`
    SysUser      string       `json:"sysuser"`
    Status       uint8        `json:"status"`
    Config       interface{}  `json:"config"`
@@ -44,7 +44,7 @@ type BotClientsT map[string]BotClientT
 
 type ConfigT struct {
    Id               string           `json:"id"`
-   Host             string           `json:"host"`
+   Host           []string           `json:"host"`
    SysUser          string           `json:"sysuser"`
    WorkDir          string           `json:"workdir"`
    Listen           string           `json:"listen"`

@@ -10,7 +10,7 @@ import (
 
 
 
-func (s *BotClientT) PingAt(botId string, cfg *ConfigT) error {
+func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
    var err         error
    var httpclient  http.Client
    var resp       *http.Response
@@ -35,7 +35,7 @@ func (s *BotClientT) PingAt(botId string, cfg *ConfigT) error {
       },
    }
 
-   url = fmt.Sprintf("https://%s%s/%s/ping", s.Host, s.Listen, botId)
+   url = fmt.Sprintf("https://%s%s/%s/ping", s.Host[botInstance], s.Listen, botId)
    resp, err = httpclient.Get(url)
 
    if err != nil {
