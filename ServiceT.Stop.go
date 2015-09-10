@@ -43,7 +43,7 @@ func (svc ServiceT) Stop() stonelizard.Response {
                return
             }
 
-            if resp.StatusCode != http.StatusOK {
+            if resp.StatusCode != http.StatusNoContent {
                Goose.Logf(1,"Error status stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
             }
 
@@ -62,8 +62,7 @@ func (svc ServiceT) Stop() stonelizard.Response {
    defer wg.Done()
 
    return stonelizard.Response{
-      Status: http.StatusOK,
-      Body: "OK",
+      Status: http.StatusNoContent,
    }
 }
 

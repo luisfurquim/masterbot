@@ -27,7 +27,7 @@ func (cfg ConfigT) Stop() error {
          return ErrStoppingBot
       }
 
-      if resp.StatusCode != http.StatusOK {
+      if resp.StatusCode != http.StatusNoContent {
          Goose.Logf(1,"%s %s@%s (%s)",ErrStatusStoppingBot,cfg.Id,cfg.Host[botInstance],resp.Status)
          return ErrStatusStoppingBot
       }

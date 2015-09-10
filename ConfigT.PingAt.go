@@ -38,7 +38,7 @@ func (cfg *ConfigT) PingAt() error {
             return
          }
 
-         if resp.StatusCode != http.StatusOK {
+         if resp.StatusCode != http.StatusNoContent {
             Goose.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host,url,resp.StatusCode)
             multiErr[instance] = ErrFailedPingingBot
             return
@@ -56,33 +56,3 @@ func (cfg *ConfigT) PingAt() error {
 
    return nil
 }
-
-/*
-   tr = &http.Transport{
-      TLSClientConfig:    &tls.Config{
-         //RootCAs: pool // crypto/x509
-      },
-      DisableCompression: true,
-   }
-
-   Client: &http.Client{
-      Transport:  tr,
-   },
-
-   req, err = http.NewRequest("POST",cfg.Auth[0].URL, strings.NewReader(form_data))
-   if err != nil {
-      return nil, err
-   }
-
-   resp, err = csi.Client.Do(req)
-   if err != nil {
-      return nil, err
-   }
-
-   body, err = ioutil.ReadAll(resp.Body)
-   if err != nil {
-      return nil, err
-   }
-
-   resp.Body.Close()
-*/

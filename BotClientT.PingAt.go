@@ -45,7 +45,7 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
 
    defer resp.Body.Close()
 
-   if resp.StatusCode != http.StatusOK {
+   if resp.StatusCode != http.StatusNoContent {
       Goose.Logf(1,"%s %s at %s (status code=%d)",ErrFailedPingingBot,botId,url,resp.StatusCode)
       return ErrFailedPingingBot
    }
