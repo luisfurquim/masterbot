@@ -3,6 +3,7 @@ package masterbot
 import (
    "os"
    "io"
+   "time"
    "io/ioutil"
    "encoding/json"
 )
@@ -32,6 +33,9 @@ func ReadConfig(cfgReader io.Reader) ([]byte, *ConfigT, error) {
       Goose.Logf(1,"%s (%s)",ErrLoadingCliCerts,err)
       return nil, nil, ErrLoadingCliCerts
    }
+
+   Config.HttpsPingClient = Config.HttpsClient(Config.BotPingTimeout * time.Second)
+   Config.HttpsStopClient = Config.HttpsClient(time.Duration(0))
 
    return ConfigFile, Config, nil
 }

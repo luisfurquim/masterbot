@@ -3,6 +3,7 @@ package masterbot
 
 import (
    "time"
+   "net/http"
    "crypto/tls"
    "crypto/x509"
    "golang.org/x/crypto/ssh"
@@ -35,6 +36,7 @@ type BotClientT struct {
    Listen       string       `json:"listen"`
    CrlListen    string       `json:"crllisten"`
    Host       []string       `json:"host"`
+   ThisHost     string       `json:"thishost,omitempty"`
    SysUser      string       `json:"sysuser"`
    Status       uint8        `json:"status"`
    Config       interface{}  `json:"config"`
@@ -59,6 +61,8 @@ type ConfigT struct {
    SshClientConfig *ssh.ClientConfig
    BotPingRate      string           `json:"botpingrate"`
    BotPingTimeout   time.Duration    `json:"botpingtimeout"`
+   HttpsPingClient *http.Client
+   HttpsStopClient *http.Client
 }
 
 const (

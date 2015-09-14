@@ -2,7 +2,6 @@ package masterbot
 
 import (
    "fmt"
-   "time"
    "sync"
    "net/http"
 )
@@ -12,35 +11,37 @@ import (
 func (cfg *ConfigT) PingAt() error {
    var err         error
    var host        string
-   var multiErr  []error
+   var botError  []error
    var botInstance int
    var wg          sync.WaitGroup
 
    wg.Add(len(cfg.Host))
 
-   multiErr = make([]error,len(cfg.Host))
+   botError = make([]error,len(cfg.Host))
    for botInstance, host = range cfg.Host {
       go func(instance int, host string) {
          var err         error
-         var httpclient *http.Client
          var resp       *http.Response
          var url         string
 
          defer wg.Done()
 
-         httpclient = cfg.HttpsClient(cfg.BotPingTimeout * time.Second)
          url   = fmt.Sprintf("https://%s%s/%s/ping", host, cfg.Listen, cfg.Id)
-         resp, err = httpclient.Get(url)
+         resp, err = cfg.HttpsPingClient.Get(url)
+
+         if resp != nil {
+            defer resp.Body.Close()
+         }
 
          if err != nil {
             Goose.Logf(1,"%s %s@%s (%s) %#v",ErrFailedPingingBot,cfg.Id,host,err,resp)
-            multiErr[instance] = ErrFailedPingingBot
+            botError[instance] = ErrFailedPingingBot
             return
          }
 
          if resp.StatusCode != http.StatusNoContent {
             Goose.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host,url,resp.StatusCode)
-            multiErr[instance] = ErrFailedPingingBot
+            botError[instance] = ErrFailedPingingBot
             return
          }
       }(botInstance,host)
@@ -48,7 +49,7 @@ func (cfg *ConfigT) PingAt() error {
 
    wg.Wait()
 
-   for _, err = range multiErr {
+   for _, err = range botError {
       if err != nil {
          return err
       }
