@@ -41,7 +41,7 @@ func (svc ServiceT) Stop() stonelizard.Response {
             }
 
             if resp.StatusCode != http.StatusNoContent {
-               Goose.Logf(1,"Error status stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
+               Goose.Logf(1,"Error of status code stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
             }
 
          }(botId,botInstance,botCfg)
