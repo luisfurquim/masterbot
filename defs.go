@@ -10,24 +10,6 @@ import (
 )
 
 
-type QueryT struct {
-   Resource string
-   SearchBy []interface{}
-   SearchFor []interface{}
-}
-
-/*
-type BotClientT interface {
-   SetConfig(io.Reader) error
-   Ping() error
-   Auth(user, pw string) error
-   Restart() error
-   Stop() error
-   ListResources() ([]ResourceT,error)
-   Query(qry QueryT) (interface{},error)
-}
-*/
-
 type BotClientT struct {
    PageNotFound string       `json:"pageNotFound"`
    Pem          string       `json:"pem"`
