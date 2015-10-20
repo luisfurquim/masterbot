@@ -4,7 +4,7 @@ import (
    "os"
    "fmt"
    "sync"
-   "io/ioutil"
+//   "io/ioutil"
 //   "net/http"
    "golang.org/x/crypto/ssh"
 )
@@ -61,7 +61,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
             fmt.Fprintf(w, "%s\n", config)
          }()
 
-
+/*
          go func() {
             Goose.Logf(6,"getting stdout")
             w, _ := session.StdoutPipe()
@@ -85,6 +85,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
                Goose.Logf(1,"SSH stderr Read: %s",output)
             }
          }()
+*/
 
          Goose.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
 

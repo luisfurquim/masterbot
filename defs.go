@@ -3,6 +3,7 @@ package masterbot
 
 import (
    "time"
+   "regexp"
    "net/http"
    "crypto/tls"
    "crypto/x509"
@@ -11,17 +12,19 @@ import (
 
 
 type BotClientT struct {
-   PageNotFound string       `json:"pageNotFound"`
-   Pem          string       `json:"pem"`
-   BinDir       string       `json:"bindir"`
-   BinName      string       `json:"binname"`
-   Listen       string       `json:"listen"`
-   CrlListen    string       `json:"crllisten"`
-   Host       []string       `json:"host"`
-   ThisHost     string       `json:"thishost,omitempty"`
-   SysUser      string       `json:"sysuser"`
-   Status       uint8        `json:"status"`
-   Config       interface{}  `json:"config"`
+   PageNotFound  string        `json:"pageNotFound"`
+   Pem           string        `json:"pem"`
+   BinDir        string        `json:"bindir"`
+   BinName       string        `json:"binname"`
+   Listen        string        `json:"listen"`
+   CrlListen     string        `json:"crllisten"`
+   Host        []string        `json:"host"`
+   ThisHost      string        `json:"thishost,omitempty"`
+   SysUser       string        `json:"sysuser"`
+   SearchPath    string        `json:"searchpath"`
+   SearchPathRE *regexp.Regexp `json:"searchpath"`
+   Status        uint8         `json:"status"`
+   Config        interface{}   `json:"config"`
 }
 
 type BotClientsT map[string]BotClientT
@@ -42,7 +45,7 @@ type ConfigT struct {
    Bot              BotClientsT      `json:"bot"`
    SshClientConfig *ssh.ClientConfig
    BotPingRate      string           `json:"botpingrate"`
-   BotPingTimeout   time.Duration    `json:"botpingtimeout"`
+   BotCommTimeout   time.Duration    `json:"botcommtimeout"`
    HttpsPingClient *http.Client
    HttpsStopClient *http.Client
 }

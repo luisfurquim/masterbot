@@ -34,7 +34,7 @@ func ReadConfig(cfgReader io.Reader) ([]byte, *ConfigT, error) {
       return nil, nil, ErrLoadingCliCerts
    }
 
-   Config.HttpsPingClient = Config.HttpsClient(Config.BotPingTimeout * time.Second)
+   Config.HttpsPingClient = Config.HttpsClient(Config.BotCommTimeout * time.Second)
    Config.HttpsStopClient = Config.HttpsClient(time.Duration(0))
 
    return ConfigFile, Config, nil

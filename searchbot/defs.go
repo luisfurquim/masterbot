@@ -2,24 +2,38 @@ package searchbot
 
 
 import (
-   "golang.org/x/tools/container/intsets"
+   "sync"
+   "net/http"
    "github.com/luisfurquim/masterbot"
+   "github.com/luisfurquim/stonelizard"
+   "golang.org/x/tools/container/intsets"
 )
 
 
-type ProviderT struct {  // Provider is a search operation. Bots may offer more than 1 provider
+type TaxonomyTreeT struct {
+   Rune    rune
+   Id      int             // In the root, this is actually the next available id
+   Next []*TaxonomyTreeT
+}
+
+// Provider is a search operation. Bots may offer more than 1 provider
+type ProviderT struct {
    Bot            *masterbot.BotClientT
    Path            string    // Restful path of the service
-   HttpMethod      string    // GET, POST, PUT, DELET, etc.
-   Operation      *SwaggerOperationT  // Service specification details
-   Requires []string         // Input parameters
-   Provides []string         // Return values
+   HttpMethod      string    // GET, POST, PUT, DELETE, etc.
+   Operation       stonelizard.SwaggerOperationT  // Service specification details
+   Requires       *intsets.Sparse                 // Input parameters (set of Taxonomy entries)
+   Provides       *intsets.Sparse                 // Return values (set of Taxonomy entries)
 }
 
 type SearchBotT struct {
-   Providers              []ProviderT
-   ByProvision   map[string]intsets.Sparse
-   ByRequirement map[string]intsets.Sparse
+   sync.RWMutex
+   Providers            []ProviderT
+   Taxonomy               TaxonomyTreeT     // List of all known data provided/required by the bots
+   ByProvision   map[int]*intsets.Sparse    // Index of bots by which data they provide
+   ByRequirement map[int]*intsets.Sparse    // Index of bots by which data they require
+   Config                *masterbot.ConfigT
+   HttpsSearchClient     *http.Client
 }
 
 type BotClientsT masterbot.BotClientsT
