@@ -1,30 +1,48 @@
 package searchbot
 
 import (
-//   "fmt"
+   "fmt"
 //   "time"
    "bytes"
    "strings"
+   "net/url"
    "net/http"
+//   "io/ioutil"
    "encoding/json"
    "encoding/xml"
 //   "github.com/luisfurquim/masterbot"
    "github.com/luisfurquim/stonelizard"
+   "github.com/luisfurquim/goose"
    "golang.org/x/tools/container/intsets"
 )
 
-func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
-   var providers         *intsets.Sparse
-   var searchFields      *intsets.Sparse
-   var commonFields      *intsets.Sparse
-   var oneShotProviders  *intsets.Sparse
-   var field              string
-   var isFragmented       bool
-   var i                  int
-   var p                 *TaxonomyTreeT
-//   var prov               int
+func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, login string, password string) stonelizard.Response {
+   var providers              *intsets.Sparse
+   var searchFields           *intsets.Sparse
+   var commonFields           *intsets.Sparse
+   var oneShotProviders       *intsets.Sparse
+   var field                   string
+   var isFragmented            bool
+   var i                       int
+   var p                      *TaxonomyTreeT
+   var hasQueryParm            bool
+   var rep     chan map[string]ResponseFieldT
+   var response     map[string]ResponseFieldT
+   var responses  map[string][]ResponseFieldT
+   var respCount               int
+
+   //TODO: Readaptar
+   searchBy["X-Login"]    = login
+   searchBy["X-Password"] = password
+
+   Goose = goose.Alert(6)
+
+   defer func() { Goose = goose.Alert(2) }()
+
 
    providers = &intsets.Sparse{}
+
+   Goose.Logf(2,"len(sb.Providers): %d",len(sb.Providers))
 
    // Fill the providers set with all provider currently known
    for i=0; i < len(sb.Providers); i++ {
@@ -37,7 +55,10 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
       i, _, p = sb.Taxonomy.Search(field)
       if ((i+1)!=len(field)) || (p==nil) || (p.Id<0) {
          Goose.Logf(1,"%s: %s",ErrUndefinedField, field)
-         return
+         return stonelizard.Response{
+            Status: http.StatusInternalServerError,
+            Body: fmt.Sprintf("%s: %s",ErrUndefinedField, field),
+         }
       }
       if sb.ByProvision[p.Id] == nil {
          isFragmented = true
@@ -81,22 +102,28 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
       // If there is at least one bot who gives all fields
       // we need and requires just fields we already have...
       if oneShotProviders.Len() > 0 {
+         rep = make(chan map[string]ResponseFieldT,oneShotProviders.Len())
+         Goose.Logf(4,"len(sb.Providers): %d",len(sb.Providers))
          for i=0; i <= oneShotProviders.Max(); i++ {
+            Goose.Logf(4,"oneShotProvider: %d",i)
             if oneShotProviders.Has(i) {
-               go func(instance int) {
-                  var err               error
-                  var req              *http.Request
-                  var host              string
-                  var path              string
-                  var swParm            stonelizard.SwaggerParameterT
-                  var body   map[string]interface{}
-                  var b_body          []byte
-                  var resp             *http.Response
+               go func(instance int, report chan map[string]ResponseFieldT) {
+                  var err                    error
+                  var req                   *http.Request
+                  var host                   string
+                  var path                   string
+                  var swParm                 stonelizard.SwaggerParameterT
+                  var body        map[string]interface{}
+                  var b_body               []byte
+                  var resp                  *http.Response
+                  var qryResponse map[string]ResponseFieldT
+                  var nHost                  int
 //                  var buf             []byte
 //                  var n                 int
-                  var nHost             int
 
                   Goose.Logf(1," searching instance %d: ",instance)
+
+                  defer func() { rep<- qryResponse }()
 
                   for nHost=0; nHost<len(sb.Providers[instance].Bot.Host); nHost++ {
                      if sb.Providers[instance].Bot.Listen[0] == ':' {
@@ -111,11 +138,21 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
 
                      Goose.Logf(4," Will add search path=%s, body=%#v",path,body)
                      Goose.Logf(4," Swagger reports the operation parameters are %#v",sb.Providers[instance].Operation.Parameters)
+                     hasQueryParm = false
                      for _, swParm = range sb.Providers[instance].Operation.Parameters {
                         Goose.Logf(3," adding search parm: %s",swParm.Name)
                         if swParm.In == "path" {
                            path = strings.Replace(path,"{" + swParm.Name + "}",searchBy[swParm.Name],-1)
                            Goose.Logf(3," path now is: %s",path)
+                        } else if swParm.In == "query" {
+                           if !hasQueryParm {
+                              path += "?"
+                              hasQueryParm = true
+                           } else {
+                              path += "&"
+                           }
+                           path += swParm.Name + "=" + url.QueryEscape(searchBy[swParm.Name])
+                           Goose.Logf(4," path now is: %#v",path)
                         } else if swParm.In == "body" {
                            body[swParm.Name] = searchBy[swParm.Name]
                            Goose.Logf(4," body now is: %#v",body)
@@ -186,6 +223,8 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
                         }
                      }
 */
+//                     tmpbody, _ :=ioutil.ReadAll(resp.Body)
+//                     Goose.Logf(4,"Response: %s",tmpbody)
 
                      if sb.Providers[instance].Operation.Produces[0] == "application/json" {
                         err = json.NewDecoder(resp.Body).Decode(&body)
@@ -193,18 +232,57 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
                         err = xml.NewDecoder(resp.Body).Decode(&body)
                      }
 
+                     Goose.Logf(4,"Response body: %#v",body)
+
                      if err != nil {
                         Goose.Logf(1,"%s: %s",ErrUnmarshalingRequestBody,err)
                         return
                      }
 
-                     Goose.Logf(4,"Response body: %#v",body)
+                     qryResponse = map[string]ResponseFieldT{}
+                     for _, fieldName := range searchFor {
+                        Goose.Logf(4,"fetching Field %s: %#v",fieldName,body[fieldName])
+                        Goose.Logf(7,"body[dtupdate]: %#v",body["dtupdate"])
+                        Goose.Logf(7,"sb.Providers[instance].BotId: %#v",sb.Providers[instance].BotId)
+                        Goose.Logf(7,"sb.Providers[instance].Bot.Host[nHost]: %#v",sb.Providers[instance].Bot.Host[nHost])
+                        qryResponse[fieldName] = ResponseFieldT{
+                           Value:    body[fieldName],
+                           Source:   sb.Providers[instance].BotId + "@" + sb.Providers[instance].Bot.Host[nHost],
+                           DtUpd:    body["DtUpdate"].(string),
+                        }
+                     }
+
+                     Goose.Logf(4,"ResponseFieldT: %#v",qryResponse)
                      break
                   }
-               }(i)
+               }(i,rep)
             }
          }
-         return
+
+         responses = map[string][]ResponseFieldT{}
+         for respCount < oneShotProviders.Len() {
+            Goose.Logf(4,"Waiting response %d/%d",respCount, oneShotProviders.Len())
+            response = <-rep
+            respCount++
+            if response != nil {
+               Goose.Logf(4,"Got response from bot: %#v",response)
+               for k,v := range response {
+                  if _, ok := responses[k]; ok {
+                     responses[k] = append(responses[k],v)
+                  } else {
+                     responses[k] = []ResponseFieldT{v}
+                  }
+               }
+            } else {
+               Goose.Logf(1,"Bot instance failed")
+            }
+         }
+
+         Goose.Logf(4,"Final consolidated ResponseFieldT: %#v",responses)
+         return stonelizard.Response{
+            Status: http.StatusOK,
+            Body: responses,
+         }
       }
    }
 
@@ -219,6 +297,11 @@ func (sb SearchBotT) Search(searchBy map[string]string, searchFor []string) {
       }
    }
 */
+
+   return stonelizard.Response{
+      Status: http.StatusOK,
+      Body: "Unimplemented yet!",
+   }
 }
 
 
