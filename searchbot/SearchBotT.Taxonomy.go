@@ -6,11 +6,11 @@ import (
    "github.com/luisfurquim/stonelizard"
 )
 
-func deepTaxonomy(p *TaxonomyTreeT, field string) []string {
+func deepTaxonomy(p *TaxonomyTreeT, field string, tid string) []string {
    var ret   []string
    var p2     *TaxonomyTreeT
 
-   Goose.Logf(3,"taxonomy.Dump field=%s, p=%#v",field,*p)
+   Goose.Logf(3,"TID:%s taxonomy.Dump field=%s, p=%#v",tid,field,*p)
 
    if p.Rune != 0 {
       field += fmt.Sprintf("%c",p.Rune)
@@ -23,23 +23,23 @@ func deepTaxonomy(p *TaxonomyTreeT, field string) []string {
    }
 
    for _, p2 = range p.Next {
-      ret = append(ret,deepTaxonomy(p2,field)...)
+      ret = append(ret,deepTaxonomy(p2,field,tid)...)
    }
 
    return ret
 }
 
-func (sb *SearchBotT) TaxonomyDump() stonelizard.Response {
+func (sb *SearchBotT) TaxonomyDump(tid string) stonelizard.Response {
    var tx []string
    var p   *TaxonomyTreeT
 
    tx = []string{}
 
-   Goose.Logf(4,"taxonomy p=%#v",sb.Taxonomy)
+   Goose.Logf(4,"TID:%s taxonomy p=%#v",tid,sb.Taxonomy)
 
    for _, p = range sb.Taxonomy.Next {
-      Goose.Logf(3,"taxonomy.root fields=%#v, p=%#v",tx,*p)
-      tx = append(tx,deepTaxonomy(p,"")...)
+      Goose.Logf(3,"TID:%s taxonomy.root fields=%#v, p=%#v",tid,tx,*p)
+      tx = append(tx,deepTaxonomy(p,"",tid)...)
    }
 
    return stonelizard.Response{

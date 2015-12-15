@@ -44,10 +44,10 @@ type SearchBotT struct {
 //   extDoc  stonelizard.Void `url:""`
 
    // end point for querying the wrapper
-   search map[string][]ResponseFieldT `method:"GET" path:"/search" header:"X-Login,X-Password" query:"searchBy,searchFor" ok:"Query succesful" X-Login:"Login name" X-Password:"User's password" searchBy:"Key-Value pairs of input parameters, key names must follow the taxonomy" searchFor:"List of fields to retrieve, field names must follow the taxonomy"`
+   search map[string][]ResponseFieldT `method:"GET" path:"/search" header:"X-Login,X-Password,X-Trackid" query:"searchBy,searchFor" ok:"Query succesful" X-Login:"Login name" X-Password:"User's password" X-Trackid:"Unique ID/request, used for log debug" searchBy:"Key-Value pairs of input parameters, key names must follow the taxonomy" searchFor:"List of fields to retrieve, field names must follow the taxonomy"`
 
    // end point for dumping the taxonomy
-   taxonomyDump []string `method:"GET" path:"/taxonomy" ok:"Query succesful"`
+   taxonomyDump []string `method:"GET" path:"/taxonomy" header:"X-Trackid" X-Trackid:"Unique ID/request, used for log debug" ok:"Query succesful"`
 
    sync.RWMutex
    Providers            []ProviderT
