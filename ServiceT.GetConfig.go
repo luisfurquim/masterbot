@@ -1,10 +1,9 @@
 package masterbot
 
 import (
-   "io"
-   "github.com/luisfurquim/slavebot"
+   "github.com/luisfurquim/stonelizard"
 )
 
-func (svc ServiceT) GetConfig() (io.Reader, error) {
-   return slavebot.ConfigReader(), nil
+func (svc ServiceT) GetConfig() (stonelizard.Shaper, error) {
+   return nil, nil
 }

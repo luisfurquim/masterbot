@@ -9,11 +9,12 @@ import (
    "golang.org/x/crypto/ssh"
 )
 
-func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
+func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
    var err         error
    var sshclient  *ssh.Client
    var session    *ssh.Session
-   var wg, subwg   sync.WaitGroup
+   var wg          sync.WaitGroup
+//   var subwg       sync.WaitGroup
    var host        string
    var multiErr  []error
    var botInstance int
@@ -51,6 +52,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
          }
          defer session.Close()
 
+/*
          subwg.Add(1)
 
          go func() {
@@ -60,6 +62,7 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
             defer w.Close()
             fmt.Fprintf(w, "%s\n", config)
          }()
+*/
 
 /*
          go func() {
@@ -89,13 +92,13 @@ func (cfg *ConfigT) Start(config []byte, dbgLevel int) error {
 
          Goose.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
 
-         if err = session.Start(fmt.Sprintf("%s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)); err != nil {
+         if err = session.Start(fmt.Sprintf("cd %s ; .%c%s -v %d %s",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel, cmdline)); err != nil {
             Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
             multiErr[instance] = ErrFailedStartingBot
             return
          }
 
-         subwg.Wait()
+//         subwg.Wait()
 
       }(botInstance)
    }

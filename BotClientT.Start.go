@@ -4,15 +4,17 @@ import (
    "os"
    "fmt"
    "sync"
+//   "strings"
 //   "net/http"
    "golang.org/x/crypto/ssh"
 )
 
-func (s *BotClientT) Start(botId string, botInstance int, config []byte, cfg *ConfigT, debugLevel int) error {
+func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *ConfigT, debugLevel int) error {
    var err        error
    var sshclient *ssh.Client
    var session   *ssh.Session
    var wg         sync.WaitGroup
+   var cmd        string
 
    if s.Status == BotStatPaused {
       return nil
@@ -42,21 +44,26 @@ func (s *BotClientT) Start(botId string, botInstance int, config []byte, cfg *Co
    }
    defer session.Close()
 
+
    wg.Add(1)
 
    go func() {
       defer wg.Done()
       w, _ := session.StdinPipe()
       defer w.Close()
-      fmt.Fprintf(w, "%s\n", config)
+      Goose.Logf(2,"Closing stdin for bot %s",botId)
+      //fmt.Fprintf(w, "%s\n", config)
    }()
 
-   if err = session.Start(fmt.Sprintf("%s%c%s -v %d",s.BinDir, os.PathSeparator, s.BinName, debugLevel)); err != nil {
+   cmd = fmt.Sprintf("%s%c%s -v %d %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, cmdline)
+   if err = session.Start(cmd); err != nil {
       Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
 
    wg.Wait()
+
+   Goose.Logf(2,"Started bot %s with cmd:[%s]",botId,cmd)
 
    s.Status = BotStatRunning
 

@@ -6,9 +6,11 @@ import (
 )
 
 func (cfg *ConfigT) NewSshClientConfig(privKeyPath string) error {
-   var err error
+   var err         error
    var clientKey []byte
-   var signer ssh.Signer
+   var signer      ssh.Signer
+
+   Goose.Logf(4,"Reading SSH private key from %s",privKeyPath)
 
    clientKey, err = ioutil.ReadFile(privKeyPath)
    if err != nil {

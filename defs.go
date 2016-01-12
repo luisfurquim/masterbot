@@ -8,23 +8,26 @@ import (
    "crypto/tls"
    "crypto/x509"
    "golang.org/x/crypto/ssh"
+   "github.com/luisfurquim/stonelizard/certkit"
 )
 
 
 type BotClientT struct {
-   PageNotFound  string        `json:"pageNotFound"`
-   Pem           string        `json:"pem"`
+//   PageNotFound  string        `json:"pageNotFound"`
+//   Pem           string        `json:"pem"`
    BinDir        string        `json:"bindir"`
    BinName       string        `json:"binname"`
    Listen        string        `json:"listen"`
-   CrlListen     string        `json:"crllisten"`
+//   CrlListen     string        `json:"crllisten"`
    Host        []string        `json:"host"`
-   ThisHost      string        `json:"thishost,omitempty"`
+//   ThisHost      string        `json:"thishost,omitempty"`
    SysUser       string        `json:"sysuser"`
    SearchPath    string        `json:"searchpath"`
    SearchPathRE *regexp.Regexp `json:"searchpath"`
    Status        uint8         `json:"status"`
-   Config        interface{}   `json:"config"`
+//   Config        interface{}   `json:"config"`
+   CronPingId  []int
+   CronPingFn  []func()
 }
 
 type BotClientsT map[string]BotClientT
@@ -36,7 +39,7 @@ type ConfigT struct {
    WorkDir          string           `json:"workdir"`
    Listen           string           `json:"listen"`
    CrlListen        string           `json:"crllisten"`
-   PageNotFound     string           `json:"pageNotFound"`
+   PageNotFoundPath string           `json:"pageNotFound"`
    Pem              string           `json:"pem"`
    BinDir           string           `json:"bindir"`
    BinName          string           `json:"binname"`
@@ -48,6 +51,7 @@ type ConfigT struct {
    BotCommTimeout   time.Duration    `json:"botcommtimeout"`
    HttpsPingClient *http.Client
    HttpsStopClient *http.Client
+   Certkit         *certkit.CertKit
 }
 
 const (

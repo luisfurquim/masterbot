@@ -1,10 +1,9 @@
 package searchbot
 
 import (
-   "io"
-   "github.com/luisfurquim/slavebot"
+   "github.com/luisfurquim/stonelizard"
 )
 
-func (sb SearchBotT) GetConfig() (io.Reader, error) {
-   return slavebot.ConfigReader(), nil
+func (sb SearchBotT) GetConfig() (stonelizard.Shaper, error) {
+   return nil, nil
 }

@@ -1,7 +1,7 @@
 package masterbot
 
 import (
-   "github.com/robfig/cron"
+   "github.com/wangboo/cron"
 )
 
 func init() {

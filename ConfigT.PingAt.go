@@ -27,6 +27,7 @@ func (cfg *ConfigT) PingAt() error {
          defer wg.Done()
 
          url   = fmt.Sprintf("https://%s%s/%s/ping", host, cfg.Listen, cfg.Id)
+         Goose.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
          resp, err = cfg.HttpsPingClient.Get(url)
 
          if resp != nil {

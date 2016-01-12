@@ -3,7 +3,7 @@ package masterbot
 import (
    "errors"
    "regexp"
-   "github.com/robfig/cron"
+   "github.com/wangboo/cron"
    "github.com/luisfurquim/goose"
 )
 
