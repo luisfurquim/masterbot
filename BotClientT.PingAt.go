@@ -29,6 +29,7 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
       return ErrFailedPingingBot
    }
 
+   Goose.Logf(4,"Pinging %s@%s",botId,s.Host[botInstance])
    return nil
 }
 

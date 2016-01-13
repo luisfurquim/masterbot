@@ -15,6 +15,11 @@ func (cfg *ConfigT) PingAt() error {
    var botInstance int
    var wg          sync.WaitGroup
 
+   if len(cfg.Host) == 0 {
+      Goose.Logf(1,"%s",ErrNoBotsToPing)
+      return ErrNoBotsToPing
+   }
+
    wg.Add(len(cfg.Host))
 
    botError = make([]error,len(cfg.Host))

@@ -18,6 +18,8 @@ var ErrFailedStartingBot    = errors.New("Error failed to starting bot")
 var ErrFailedPingingBot     = errors.New("Error failed pinging bot")
 var ErrStatusStoppingBot    = errors.New("Error of status stopping bot")
 var ErrStoppingBot          = errors.New("Error stopping bot")
+var ErrNoBotsToPing         = errors.New("Error no bots to ping at")
+
 var Goose                     goose.Alert
 var Kairos                   *cron.Cron
 //var SessionKeepAlive string
