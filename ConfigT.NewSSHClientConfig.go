@@ -10,17 +10,17 @@ func (cfg *ConfigT) NewSshClientConfig(privKeyPath string) error {
    var clientKey []byte
    var signer      ssh.Signer
 
-   Goose.Logf(4,"Reading SSH private key from %s",privKeyPath)
+   Goose.ClientCfg.Logf(4,"Reading SSH private key from %s",privKeyPath)
 
    clientKey, err = ioutil.ReadFile(privKeyPath)
    if err != nil {
-      Goose.Logf(1,"%s (%s)",ErrReadingSSHKeys,err)
+      Goose.ClientCfg.Logf(1,"%s (%s)",ErrReadingSSHKeys,err)
       return ErrReadingSSHKeys
    }
 
    signer, err = ssh.ParsePrivateKey(clientKey)
    if err != nil {
-      Goose.Logf(1,"%s (%s)",ErrParsingSSHKeys,err)
+      Goose.ClientCfg.Logf(1,"%s (%s)",ErrParsingSSHKeys,err)
       return ErrReadingSSHKeys
    }
 

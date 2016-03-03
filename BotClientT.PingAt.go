@@ -16,7 +16,7 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
    resp, err = cfg.HttpsPingClient.Get(url)
 
    if err != nil {
-      Goose.Logf(1,"%s (%s) %#v",ErrFailedPingingBot,err,resp)
+      Goose.Ping.Logf(1,"%s (%s) %#v",ErrFailedPingingBot,err,resp)
       return ErrFailedPingingBot
    }
 
@@ -25,11 +25,11 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
    }
 
    if resp.StatusCode != http.StatusNoContent {
-      Goose.Logf(1,"%s %s at %s (status code=%d)",ErrFailedPingingBot,botId,url,resp.StatusCode)
+      Goose.Ping.Logf(1,"%s %s at %s (status code=%d)",ErrFailedPingingBot,botId,url,resp.StatusCode)
       return ErrFailedPingingBot
    }
 
-   Goose.Logf(4,"Pinging %s@%s",botId,s.Host[botInstance])
+   Goose.Ping.Logf(4,"Pinging %s@%s",botId,s.Host[botInstance])
    return nil
 }
 

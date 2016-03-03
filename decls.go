@@ -20,7 +20,6 @@ var ErrStatusStoppingBot    = errors.New("Error of status stopping bot")
 var ErrStoppingBot          = errors.New("Error stopping bot")
 var ErrNoBotsToPing         = errors.New("Error no bots to ping at")
 
-var Goose                     goose.Alert
 var Kairos                   *cron.Cron
 //var SessionKeepAlive string
 //var SessionQueueSize int = 5
@@ -29,4 +28,9 @@ var ReBotSearchInputParameters *regexp.Regexp = regexp.MustCompile("#([\\pL0-9_]
 var ReBotSearchOutputData      *regexp.Regexp = regexp.MustCompile("\\$([\\pL0-9_]+)")
 
 
+var Goose struct {
+   StartStop goose.Alert
+   Ping      goose.Alert
+   ClientCfg goose.Alert
+}
 

@@ -13,7 +13,7 @@ func (cfg ConfigT) Stop() error {
    var botInstance int
    var wg          sync.WaitGroup
 
-   Goose.Logf(2,"Stopping master bot")
+   Goose.StartStop.Logf(2,"Stopping master bot")
 
    wg.Add(len(cfg.Host))
 
@@ -27,7 +27,7 @@ func (cfg ConfigT) Stop() error {
          defer wg.Done()
 
          url   = fmt.Sprintf("https://%s%s/%s/stop", host, cfg.Listen, cfg.Id)
-         Goose.Logf(2,"Stopping bot %s@%s via %s",cfg.Id,host,url)
+         Goose.StartStop.Logf(2,"Stopping bot %s@%s via %s",cfg.Id,host,url)
          resp, err = cfg.HttpsStopClient.Get(url)
 
          if resp != nil {
@@ -35,13 +35,13 @@ func (cfg ConfigT) Stop() error {
          }
 
          if err != nil {
-            Goose.Logf(1,"%s %s@%s (%s)",ErrStoppingBot,cfg.Id,host,err)
+            Goose.StartStop.Logf(1,"%s %s@%s (%s)",ErrStoppingBot,cfg.Id,host,err)
             botError[instance] = ErrStoppingBot
             return
          }
 
          if resp.StatusCode != http.StatusNoContent {
-            Goose.Logf(1,"%s %s@%s (%s)",ErrStatusStoppingBot,cfg.Id,host,resp.Status)
+            Goose.StartStop.Logf(1,"%s %s@%s (%s)",ErrStatusStoppingBot,cfg.Id,host,resp.Status)
             botError[instance] = ErrStatusStoppingBot
             return
          }

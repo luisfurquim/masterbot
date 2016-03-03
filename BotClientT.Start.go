@@ -22,24 +22,24 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
 
    err = s.PingAt(botId, botInstance, cfg)
    if err == nil {
-      Goose.Logf(2,"bot %s@%s is alive",botId,s.Host[botInstance])
+      Goose.StartStop.Logf(2,"bot %s@%s is alive",botId,s.Host[botInstance])
       return nil
    }
 
-   Goose.Logf(2,"Starting bot %s",botId)
+   Goose.StartStop.Logf(2,"Starting bot %s",botId)
 
    s.Status = BotStatUnreachable
    cfg.SshClientConfig.User = s.SysUser
 
    sshclient, err = ssh.Dial("tcp", s.Host[botInstance] + ":22", cfg.SshClientConfig)
    if err != nil {
-      Goose.Logf(1,"%s (%s)",ErrDialingToBot,err)
+      Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
       return ErrDialingToBot
    }
 
    session, err = sshclient.NewSession()
    if err != nil {
-      Goose.Logf(1,"%s (%s)",ErrCreatingSession,err)
+      Goose.StartStop.Logf(1,"%s (%s)",ErrCreatingSession,err)
       return ErrCreatingSession
    }
    defer session.Close()
@@ -51,19 +51,19 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
       defer wg.Done()
       w, _ := session.StdinPipe()
       defer w.Close()
-      Goose.Logf(2,"Closing stdin for bot %s",botId)
+      Goose.StartStop.Logf(2,"Closing stdin for bot %s",botId)
       //fmt.Fprintf(w, "%s\n", config)
    }()
 
    cmd = fmt.Sprintf("%s%c%s -v %d %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, cmdline)
    if err = session.Start(cmd); err != nil {
-      Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
+      Goose.StartStop.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
 
    wg.Wait()
 
-   Goose.Logf(2,"Started bot %s with cmd:[%s]",botId,cmd)
+   Goose.StartStop.Logf(2,"Started bot %s with cmd:[%s]",botId,cmd)
 
    s.Status = BotStatRunning
 

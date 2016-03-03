@@ -19,5 +19,7 @@ var ErrQueryingSearchBot             = errors.New("Error querying search bot")
 var ErrAssemblyingRequest            = errors.New("Error assemblying http request")
 var ErrReadingResponseBody           = errors.New("Error reading response body")
 
-var Goose goose.Alert
-
+var Goose struct {
+   Search goose.Alert
+   Taxonomy goose.Alert
+}

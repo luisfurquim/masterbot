@@ -15,14 +15,14 @@ func ReadConfig(cfgReader io.Reader) ([]byte, *ConfigT, error) {
 
    ConfigFile, err = ioutil.ReadAll(cfgReader)
    if err != nil {
-      Goose.Logf(1,"%s (%s)",ErrReadingConfig,err)
+      Goose.ClientCfg.Logf(1,"%s (%s)",ErrReadingConfig,err)
       return nil, nil, ErrReadingConfig
    }
 
    Config = &ConfigT{}
    err = json.Unmarshal(ConfigFile,Config)
    if err != nil {
-      Goose.Logf(1,"%s (%s) %s",ErrParsingConfig,err,ConfigFile)
+      Goose.ClientCfg.Logf(1,"%s (%s) %s",ErrParsingConfig,err,ConfigFile)
       return nil, nil, ErrParsingConfig
    }
 
@@ -30,7 +30,7 @@ func ReadConfig(cfgReader io.Reader) ([]byte, *ConfigT, error) {
 
    err = Config.LoadClientCert()
    if err!=nil {
-      Goose.Logf(1,"%s (%s)",ErrLoadingCliCerts,err)
+      Goose.ClientCfg.Logf(1,"%s (%s)",ErrLoadingCliCerts,err)
       return nil, nil, ErrLoadingCliCerts
    }
 

@@ -13,7 +13,7 @@ func (svc ServiceT) Stop() stonelizard.Response {
    var wg          sync.WaitGroup
    var botInstance int
 
-   Goose.Logf(2,"Stopping slave bots")
+   Goose.StartStop.Logf(2,"Stopping slave bots")
 
    for botId, botCfg = range svc.appcfg.Bot {
       for botInstance, _ = range botCfg.Host {
@@ -32,23 +32,23 @@ func (svc ServiceT) Stop() stonelizard.Response {
             defer wg.Done()
 
             url   = fmt.Sprintf("https://%s%s/%s/stop", botCfg.Host[instance], botCfg.Listen, id)
-            Goose.Logf(2,"Stopping bot %s@%s via %s",id,botCfg.Host[instance],url)
+            Goose.StartStop.Logf(2,"Stopping bot %s@%s via %s",id,botCfg.Host[instance],url)
             resp, err = svc.appcfg.HttpsStopClient.Get(url)
 
             if err != nil {
-               Goose.Logf(1,"Error stopping bot %s@%s (%s)",id,botCfg.Host[instance],err)
+               Goose.StartStop.Logf(1,"Error stopping bot %s@%s (%s)",id,botCfg.Host[instance],err)
                return
             }
 
             if resp.StatusCode != http.StatusNoContent {
-               Goose.Logf(1,"Error of status code stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
+               Goose.StartStop.Logf(1,"Error of status code stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
             }
 
          }(botId,botInstance,botCfg)
       }
    }
 
-   Goose.Logf(2,"Stopping masterbot")
+   Goose.StartStop.Logf(2,"Stopping masterbot")
 
    go (func () {
       Kairos.Stop()

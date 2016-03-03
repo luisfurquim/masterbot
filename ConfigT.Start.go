@@ -21,11 +21,11 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
 
    err = cfg.PingAt()
    if err == nil {
-      Goose.Logf(2,"bot %s is alive",cfg.Id)
+      Goose.StartStop.Logf(2,"bot %s is alive",cfg.Id)
       return nil
    }
 
-   Goose.Logf(2,"Starting bot %s",cfg.Id)
+   Goose.StartStop.Logf(2,"Starting bot %s",cfg.Id)
 
    cfg.SshClientConfig.User = cfg.SysUser
 
@@ -39,14 +39,14 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
 
          sshclient, err = ssh.Dial("tcp", host + ":22", cfg.SshClientConfig)
          if err != nil {
-            Goose.Logf(1,"%s (%s)",ErrDialingToBot,err)
+            Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
             multiErr[instance] = ErrDialingToBot
             return
          }
 
          session, err = sshclient.NewSession()
          if err != nil {
-            Goose.Logf(1,"%s (%s)",ErrCreatingSession,err)
+            Goose.StartStop.Logf(1,"%s (%s)",ErrCreatingSession,err)
             multiErr[instance] = ErrCreatingSession
             return
          }
@@ -57,7 +57,7 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
 
          go func() {
             defer subwg.Done()
-            Goose.Logf(6,"Sending config")
+            Goose.StartStop.Logf(6,"Sending config")
             w, _ := session.StdinPipe()
             defer w.Close()
             fmt.Fprintf(w, "%s\n", config)
@@ -66,34 +66,34 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
 
 /*
          go func() {
-            Goose.Logf(6,"getting stdout")
+            Goose.StartStop.Logf(6,"getting stdout")
             w, _ := session.StdoutPipe()
 
             output, err := ioutil.ReadAll(w)
             if err != nil {
-               Goose.Logf(1,"Error reading SSH output (%s)",err)
+               Goose.StartStop.Logf(1,"Error reading SSH output (%s)",err)
             } else {
-               Goose.Logf(6,"SSH stdout Read: %s",output)
+               Goose.StartStop.Logf(6,"SSH stdout Read: %s",output)
             }
          }()
 
          go func() {
-            Goose.Logf(6,"getting stderr")
+            Goose.StartStop.Logf(6,"getting stderr")
             w, _ := session.StderrPipe()
 
             output, err := ioutil.ReadAll(w)
             if err != nil {
-               Goose.Logf(1,"Error reading stderr (%s)",err)
+               Goose.StartStop.Logf(1,"Error reading stderr (%s)",err)
             } else if len(output) > 0 {
-               Goose.Logf(1,"SSH stderr Read: %s",output)
+               Goose.StartStop.Logf(1,"SSH stderr Read: %s",output)
             }
          }()
 */
 
-         Goose.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
+         Goose.StartStop.Logf(6,"SSH starting %s%c%s -v %d",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel)
 
          if err = session.Start(fmt.Sprintf("cd %s ; .%c%s -v %d %s",cfg.BinDir, os.PathSeparator, cfg.BinName, dbgLevel, cmdline)); err != nil {
-            Goose.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
+            Goose.StartStop.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
             multiErr[instance] = ErrFailedStartingBot
             return
          }
@@ -111,6 +111,6 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
       }
    }
 
-   Goose.Logf(2,"Bot %s started successfully",cfg.Id)
+   Goose.StartStop.Logf(2,"Bot %s started successfully",cfg.Id)
    return nil
 }

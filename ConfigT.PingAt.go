@@ -16,7 +16,7 @@ func (cfg *ConfigT) PingAt() error {
    var wg          sync.WaitGroup
 
    if len(cfg.Host) == 0 {
-      Goose.Logf(1,"%s",ErrNoBotsToPing)
+      Goose.Ping.Logf(1,"%s",ErrNoBotsToPing)
       return ErrNoBotsToPing
    }
 
@@ -32,7 +32,7 @@ func (cfg *ConfigT) PingAt() error {
          defer wg.Done()
 
          url   = fmt.Sprintf("https://%s%s/%s/ping", host, cfg.Listen, cfg.Id)
-         Goose.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
+         Goose.Ping.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
          resp, err = cfg.HttpsPingClient.Get(url)
 
          if resp != nil {
@@ -40,13 +40,13 @@ func (cfg *ConfigT) PingAt() error {
          }
 
          if err != nil {
-            Goose.Logf(1,"%s %s@%s (%s) %#v",ErrFailedPingingBot,cfg.Id,host,err,resp)
+            Goose.Ping.Logf(1,"%s %s@%s (%s) %#v",ErrFailedPingingBot,cfg.Id,host,err,resp)
             botError[instance] = ErrFailedPingingBot
             return
          }
 
          if resp.StatusCode != http.StatusNoContent {
-            Goose.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host,url,resp.StatusCode)
+            Goose.Ping.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host,url,resp.StatusCode)
             botError[instance] = ErrFailedPingingBot
             return
          }

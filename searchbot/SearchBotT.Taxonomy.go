@@ -10,7 +10,7 @@ func deepTaxonomy(p *TaxonomyTreeT, field string, tid string) []string {
    var ret   []string
    var p2     *TaxonomyTreeT
 
-   Goose.Logf(3,"TID:%s taxonomy.Dump field=%s, p=%#v",tid,field,*p)
+   Goose.Search.Logf(6,"TID:%s taxonomy.Dump field=%s, p=%#v",tid,field,*p)
 
    if p.Rune != 0 {
       field += fmt.Sprintf("%c",p.Rune)
@@ -35,10 +35,11 @@ func (sb *SearchBotT) TaxonomyDump(tid string) stonelizard.Response {
 
    tx = []string{}
 
-   Goose.Logf(4,"TID:%s taxonomy p=%#v",tid,sb.Taxonomy)
+   Goose.Search.Logf(4,"TID:%s taxonomy dump requested",tid)
+   Goose.Search.Logf(6,"TID:%s taxonomy p=%#v",tid,sb.Taxonomy)
 
    for _, p = range sb.Taxonomy.Next {
-      Goose.Logf(3,"TID:%s taxonomy.root fields=%#v, p=%#v",tid,tx,*p)
+      Goose.Search.Logf(6,"TID:%s taxonomy.root fields=%#v, p=%#v",tid,tx,*p)
       tx = append(tx,deepTaxonomy(p,"",tid)...)
    }
 
