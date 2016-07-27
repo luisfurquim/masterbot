@@ -31,17 +31,17 @@ func (svc ServiceT) Stop() stonelizard.Response {
 
             defer wg.Done()
 
-            url   = fmt.Sprintf("https://%s%s/%s/stop", botCfg.Host[instance], botCfg.Listen, id)
-            Goose.StartStop.Logf(2,"Stopping bot %s@%s via %s",id,botCfg.Host[instance],url)
+            url   = fmt.Sprintf("https://%s%s/%s/stop", cfg.Host[instance], cfg.Listen, id)
+            Goose.StartStop.Logf(2,"Stopping bot %s@%s via %s",id,cfg.Host[instance],url)
             resp, err = svc.appcfg.HttpsStopClient.Get(url)
 
             if err != nil {
-               Goose.StartStop.Logf(1,"Error stopping bot %s@%s (%s)",id,botCfg.Host[instance],err)
+               Goose.StartStop.Logf(1,"Error stopping bot %s@%s (%s)",id,cfg.Host[instance],err)
                return
             }
 
             if resp.StatusCode != http.StatusNoContent {
-               Goose.StartStop.Logf(1,"Error of status code stopping bot %s@%s (%s)",id,botCfg.Host[instance],resp.Status)
+               Goose.StartStop.Logf(1,"Error of status code stopping bot %s@%s (%s)",id,cfg.Host[instance],resp.Status)
             }
 
          }(botId,botInstance,botCfg)

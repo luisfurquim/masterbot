@@ -24,7 +24,7 @@ func (bc *BotClientsT) Start(config *ConfigT, cmdline string, debugLevel int) {
 
       for botInstance,_ = range botCfg.Host {
          Goose.StartStop.Logf(4,"Agendando instancia %s (%d) de pinger, |pingId|=%d",botCfg.Host[botInstance],botInstance,len(botCfg.CronPingId))
-         botCfg.CronPingFn[botInstance] = (func(bot *BotClientT, cmd string, id string, instance int) (func()) {
+         botCfg.CronPingFn[botInstance] = (func(bot BotClientT, cmd string, id string, instance int) (func()) {
             return func() {
                var err        error
                Goose.StartStop.Logf(4,"Pinging slave bot %s@%s",id,bot.Host[instance])
@@ -34,7 +34,7 @@ func (bc *BotClientsT) Start(config *ConfigT, cmdline string, debugLevel int) {
                   Goose.StartStop.Logf(1,"Error starting bot %s@%s (%s)",id,bot.Host[instance],err)
                }
             }
-         })(&botCfg,cmdline,botId,botInstance) // Closure to avoid direct access to bc and having it changing from time to time
+         })(botCfg,cmdline,botId,botInstance) // Closure to avoid direct access to bc and having it changing from time to time
          botCfg.CronPingId[botInstance], err = Kairos.AddFunc(config.BotPingRate, botCfg.CronPingFn[botInstance])
          if err != nil {
             Goose.StartStop.Logf(1,"Error scheduling bot %s@%s ping job (%s)",botId,botCfg.Host[botInstance],err)

@@ -23,7 +23,7 @@ type BotClientT struct {
 //   ThisHost      string        `json:"thishost,omitempty"`
    SysUser       string        `json:"sysuser"`
    SearchPath    string        `json:"searchpath"`
-   SearchPathRE *regexp.Regexp `json:"searchpath"`
+   SearchPathRE *regexp.Regexp
    Status        uint8         `json:"status"`
 //   Config        interface{}   `json:"config"`
    CronPingId  []int
