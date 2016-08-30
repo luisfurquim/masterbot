@@ -1,6 +1,6 @@
 package masterbot
 
-func (cfg ConfigT) GetHost() []string {
+func (cfg ConfigT) GetHost() []Host {
    return cfg.Host
 }
 

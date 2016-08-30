@@ -15,8 +15,9 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
    var err           error
    var ok            bool
    var res           SearchBotT
-   var host, bot     string
-   var botCfg        masterbot.BotClientT
+   var host          masterbot.Host
+   var bot           string
+   var botCfg       *masterbot.BotClientT
    var swagger       stonelizard.SwaggerT
    var resp         *http.Response
    var path          string
@@ -39,10 +40,10 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
       ByProvision:   map[int]*intsets.Sparse{},
       ByRequirement: map[int]*intsets.Sparse{},
       Config:                 cfg,
-      HttpsSearchClient:      cfg.HttpsClient(cfg.BotCommTimeout * time.Second),
+      HttpsSearchClient:      cfg.HttpsClient(time.Duration(cfg.BotCommTimeout) * time.Second),
    }
 
-   time.Sleep(2 * cfg.BotCommTimeout * time.Second)
+   time.Sleep(2 * time.Duration(cfg.BotCommTimeout) * time.Second)
 
    masterbot.Kairos.AddFunc(cfg.BotPingRate, (func(bots *masterbot.BotClientsT) (func()) {
       return func() {
@@ -58,7 +59,7 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                   var url        string
                   var err        error
 
-                  url   = fmt.Sprintf("https://%s%s/swagger.json", host, botCfg.Listen)
+                  url   = fmt.Sprintf("https://%s%s/swagger.json", host.Name, botCfg.Listen)
                   Goose.Taxonomy.Logf(2,"fetching swagger.json via %s",url)
 
                   resp, err = res.HttpsSearchClient.Get(url)
@@ -68,18 +69,18 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                   }
 
                   if err != nil {
-                     Goose.Taxonomy.Logf(1,"%s from %s@%s (%s)",ErrTmoutFetchingSwagger,bot,host,err)
+                     Goose.Taxonomy.Logf(1,"%s from %s@%s (%s)",ErrTmoutFetchingSwagger,bot,host.Name,err)
                      return ErrTmoutFetchingSwagger
                   }
 
                   if resp.StatusCode != http.StatusOK {
-                     Goose.Taxonomy.Logf(1,"%s from %s@%s at %s (status code=%d)",ErrHttpStatusFetchingSwagger,bot,host,url,resp.StatusCode)
+                     Goose.Taxonomy.Logf(1,"%s from %s@%s at %s (status code=%d)",ErrHttpStatusFetchingSwagger,bot,host.Name,url,resp.StatusCode)
                      return ErrHttpStatusFetchingSwagger
                   }
 
                   err = json.NewDecoder(resp.Body).Decode(&swagger)
                   if err != nil {
-                     Goose.Taxonomy.Logf(1,"%s of %s@%s (%s)",ErrDecodingSwagger,bot,host,err)
+                     Goose.Taxonomy.Logf(1,"%s of %s@%s (%s)",ErrDecodingSwagger,bot,host.Name,err)
                      return ErrDecodingSwagger
                   }
 
@@ -100,7 +101,7 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                         Goose.Taxonomy.Logf(3,"Found search operation: %s, path=%s",operation.OperationId, path)
                         Goose.Taxonomy.Logf(7,"operation parameters: %#v",operation.Parameters)
                         provider = ProviderT{
-                           Bot:           &botCfg,
+                           Bot:            botCfg,
                            BotId:          bot,
                            Path:           swagger.BasePath + path,
                            HttpMethod:     strings.ToUpper(method),
@@ -164,7 +165,7 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                   }
                }
 
-               Goose.Taxonomy.Logf(2,"end registering search host: %s",host)
+               Goose.Taxonomy.Logf(2,"end registering search host: %s",host.Name)
                Goose.Taxonomy.Logf(4,"Taxonomy: %#v",res.Taxonomy)
                break
             }

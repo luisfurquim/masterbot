@@ -11,30 +11,40 @@ import (
    "github.com/luisfurquim/stonelizard/certkit"
 )
 
+type StatusT struct {
+   Status       string             `json:"status"`
+   OnStatUpdate func(string) error `json:"-"`
+}
+
+
+type Host struct {
+   Name    string        `json:"name"`
+   StatusT
+}
+
+type Hosts []Host
 
 type BotClientT struct {
-//   PageNotFound  string        `json:"pageNotFound"`
-//   Pem           string        `json:"pem"`
    BinDir        string        `json:"bindir"`
    BinName       string        `json:"binname"`
    Listen        string        `json:"listen"`
-//   CrlListen     string        `json:"crllisten"`
-   Host        []string        `json:"host"`
-//   ThisHost      string        `json:"thishost,omitempty"`
+   Host          Hosts         `json:"host"`
    SysUser       string        `json:"sysuser"`
    SearchPath    string        `json:"searchpath"`
-   SearchPathRE *regexp.Regexp
-   Status        uint8         `json:"status"`
-//   Config        interface{}   `json:"config"`
-   CronPingId  []int
-   CronPingFn  []func()
+   SearchPathRE *regexp.Regexp `json:"-"`
+   StatusT
+   CronPingId  []int           `json:"-"`
+   CronPingFn  []func()        `json:"-"`
 }
 
-type BotClientsT map[string]BotClientT
+type BotClientPtr           *BotClientT
+type BotClientsT map[string]BotClientPtr
+
+type Timeout time.Duration
 
 type ConfigT struct {
    Id               string           `json:"id"`
-   Host           []string           `json:"host"`
+   Host             Hosts            `json:"host"`
    SysUser          string           `json:"sysuser"`
    WorkDir          string           `json:"workdir"`
    Listen           string           `json:"listen"`
@@ -43,22 +53,22 @@ type ConfigT struct {
    Pem              string           `json:"pem"`
    BinDir           string           `json:"bindir"`
    BinName          string           `json:"binname"`
-   ClientCert       tls.Certificate
-   ClientCA        *x509.CertPool
+   ClientCert       tls.Certificate  `json:"-"`
+   ClientCA        *x509.CertPool    `json:"-"`
    Bot              BotClientsT      `json:"bot"`
-   SshClientConfig *ssh.ClientConfig
+   SshClientConfig *ssh.ClientConfig `json:"-"`
    BotPingRate      string           `json:"botpingrate"`
-   BotCommTimeout   time.Duration    `json:"botcommtimeout"`
-   HttpsPingClient *http.Client
-   HttpsStopClient *http.Client
-   Certkit         *certkit.CertKit
+   BotCommTimeout   Timeout          `json:"botcommtimeout"`
+   HttpsPingClient *http.Client      `json:"-"`
+   HttpsStopClient *http.Client      `json:"-"`
+   Certkit         *certkit.CertKit  `json:"-"`
 }
 
 const (
-   BotStatStopped = iota
-   BotStatRunning
-   BotStatPaused
-   BotStatUnreachable
+   BotStatStopped     string = "S"
+   BotStatRunning     string = "R"
+   BotStatPaused      string = "P"
+   BotStatUnreachable string = "U"
 )
 
 

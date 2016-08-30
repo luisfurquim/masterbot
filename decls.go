@@ -28,9 +28,10 @@ var ReBotSearchInputParameters *regexp.Regexp = regexp.MustCompile("#([\\pL0-9_]
 var ReBotSearchOutputData      *regexp.Regexp = regexp.MustCompile("\\$([\\pL0-9_]+)")
 
 
-var Goose struct {
+type MasterbotG struct {
    StartStop goose.Alert
    Ping      goose.Alert
    ClientCfg goose.Alert
 }
 
+var Goose MasterbotG

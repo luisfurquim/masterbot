@@ -10,7 +10,7 @@ import (
 
 func (cfg *ConfigT) PingAt() error {
    var err         error
-   var host        string
+   var host        Host
    var botError  []error
    var botInstance int
    var wg          sync.WaitGroup
@@ -24,31 +24,38 @@ func (cfg *ConfigT) PingAt() error {
 
    botError = make([]error,len(cfg.Host))
    for botInstance, host = range cfg.Host {
-      go func(instance int, host string) {
+      go func(instance int, host Host) {
          var err         error
          var resp       *http.Response
          var url         string
 
          defer wg.Done()
 
-         url   = fmt.Sprintf("https://%s%s/%s/ping", host, cfg.Listen, cfg.Id)
-         Goose.Ping.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
-         resp, err = cfg.HttpsPingClient.Get(url)
+         if host.Status == BotStatRunning {
 
-         if resp != nil {
-            defer resp.Body.Close()
-         }
+            url   = fmt.Sprintf("https://%s%s/%s/ping", host.Name, cfg.Listen, cfg.Id)
+            Goose.Ping.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
+            resp, err = cfg.HttpsPingClient.Get(url)
 
-         if err != nil {
-            Goose.Ping.Logf(1,"%s %s@%s (%s) %#v",ErrFailedPingingBot,cfg.Id,host,err,resp)
+            if resp != nil {
+               defer resp.Body.Close()
+            }
+
+            if err != nil {
+               Goose.Ping.Logf(1,"%s %s@%s (%s) %#v",ErrFailedPingingBot,cfg.Id,host.Name,err,resp)
+               botError[instance] = ErrFailedPingingBot
+               return
+            }
+
+            if resp.StatusCode != http.StatusNoContent {
+               Goose.Ping.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host.Name,url,resp.StatusCode)
+               botError[instance] = ErrFailedPingingBot
+               return
+            }
+         } else {
+            Goose.Ping.Logf(1,"%s %s@%s at %s (not running)",ErrFailedPingingBot,cfg.Id,host.Name,url)
+            Goose.Ping.Logf(1,"%#v",cfg.Host)
             botError[instance] = ErrFailedPingingBot
-            return
-         }
-
-         if resp.StatusCode != http.StatusNoContent {
-            Goose.Ping.Logf(1,"%s %s@%s at %s (status code=%d)",ErrFailedPingingBot,cfg.Id,host,url,resp.StatusCode)
-            botError[instance] = ErrFailedPingingBot
-            return
          }
       }(botInstance,host)
    }

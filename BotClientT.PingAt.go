@@ -12,7 +12,8 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
    var resp       *http.Response
    var url         string
 
-   url = fmt.Sprintf("https://%s%s/%s/ping", s.Host[botInstance], s.Listen, botId)
+   Goose.Ping.Logf(3,"Pinging %s@%s",botId,s.Host[botInstance].Name)
+   url = fmt.Sprintf("https://%s%s/%s/ping", s.Host[botInstance].Name, s.Listen, botId)
    resp, err = cfg.HttpsPingClient.Get(url)
 
    if err != nil {
@@ -29,7 +30,6 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
       return ErrFailedPingingBot
    }
 
-   Goose.Ping.Logf(4,"Pinging %s@%s",botId,s.Host[botInstance])
    return nil
 }
 

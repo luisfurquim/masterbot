@@ -127,7 +127,7 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
 
                   for nHost=0; nHost<len(sb.Providers[instance].Bot.Host); nHost++ {
                      if sb.Providers[instance].Bot.Listen[0] == ':' {
-                        host = sb.Providers[instance].Bot.Host[nHost]
+                        host = sb.Providers[instance].Bot.Host[nHost].Name
                      } else {
                         nHost = len(sb.Providers[instance].Bot.Host)
                      }
@@ -177,7 +177,6 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
                         Goose.Search.Logf(1,"%s: %s",ErrAssemblyingRequest,err)
                         return
                      }
-
 
                      for _, swParm = range sb.Providers[instance].Operation.Parameters {
                         if swParm.In == "header" {
@@ -247,7 +246,7 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
                         Goose.Search.Logf(7,"TID:%s sb.Providers[instance].Bot.Host[nHost]: %#v",tid,sb.Providers[instance].Bot.Host[nHost])
                         qryResponse[fieldName] = ResponseFieldT{
                            Value:    body[fieldName],
-                           Source:   sb.Providers[instance].BotId + "@" + sb.Providers[instance].Bot.Host[nHost],
+                           Source:   sb.Providers[instance].BotId + "@" + sb.Providers[instance].Bot.Host[nHost].Name,
                            DtUpd:    body["DtUpdate"].(string),
                         }
                      }

@@ -16,22 +16,28 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    var wg         sync.WaitGroup
    var cmd        string
 
-   if s.Status == BotStatPaused {
+   if s.Host[botInstance].Status == BotStatPaused {
       return nil
    }
 
-   err = s.PingAt(botId, botInstance, cfg)
-   if err == nil {
-      Goose.StartStop.Logf(2,"bot %s@%s is alive",botId,s.Host[botInstance])
-      return nil
+   if s.Host[botInstance].Status == BotStatRunning {
+      err = s.PingAt(botId, botInstance, cfg)
+      if err == nil {
+         Goose.Ping.Logf(2,"bot %s@%s is alive",botId,s.Host[botInstance].Name)
+         return nil
+      }
    }
 
-   Goose.StartStop.Logf(2,"Starting bot %s",botId)
+   Goose.StartStop.Logf(2,"Starting bot %s@%s",botId,s.Host[botInstance].Name)
 
-   s.Status = BotStatUnreachable
-   cfg.SshClientConfig.User = s.SysUser
+   s.Host[botInstance].Status = BotStatUnreachable
+   if s.Host[botInstance].OnStatUpdate != nil {
+      s.Host[botInstance].OnStatUpdate(BotStatUnreachable)
+   }
 
-   sshclient, err = ssh.Dial("tcp", s.Host[botInstance] + ":22", cfg.SshClientConfig)
+   cfg.SshClientConfig.User   = s.SysUser
+
+   sshclient, err = ssh.Dial("tcp", s.Host[botInstance].Name + ":22", cfg.SshClientConfig)
    if err != nil {
       Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
       return ErrDialingToBot
@@ -65,7 +71,10 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
 
    Goose.StartStop.Logf(2,"Started bot %s with cmd:[%s]",botId,cmd)
 
-   s.Status = BotStatRunning
+   s.Host[botInstance].Status = BotStatRunning
+   if s.Host[botInstance].OnStatUpdate != nil {
+      s.Host[botInstance].OnStatUpdate(BotStatRunning)
+   }
 
    return nil
 }
