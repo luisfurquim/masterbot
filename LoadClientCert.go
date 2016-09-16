@@ -1,70 +1,64 @@
 package masterbot
 
 import (
-//   "fmt"
-   "io/ioutil"
+   "os"
+   "fmt"
+//   "io/ioutil"
    "crypto/tls"
-   "crypto/rsa"
-   "crypto/x509"
-   "encoding/pem"
+//   "crypto/rsa"
+//   "crypto/x509"
+   "archive/zip"
+//   "encoding/pem"
 )
 
 func (cfg *ConfigT) LoadClientCert() error {
-   var err error
-   var caCert []byte
-   var cert, key, plainkey []byte
-   var pemblockkey, pemblockcert *pem.Block
-   var rsakey *rsa.PrivateKey
+   var err    error
+   var hn     string
+   var cert []byte
+   var key  []byte
+//   var key   *rsa.PrivateKey
 
-   key, err = ioutil.ReadFile(cfg.Pem + "/client.key")
+   hn, err = os.Hostname()
    if err != nil {
+      Goose.ClientCfg.Logf(0,"Error checking hostname: %s",err)
       return err
    }
 
-   cert, err = ioutil.ReadFile(cfg.Pem + "/client.crt")
+   r, err := zip.OpenReader(fmt.Sprintf("%s%c%s.ck",cfg.Pem, os.PathSeparator,hn))
    if err != nil {
+      Goose.ClientCfg.Logf(0,"Error decompressing certificate archive: %s",err)
+      return err
+   }
+   defer r.Close()
+
+   // Iterate through the files in the archive.
+   for _, f := range r.File {
+      rc, err := f.Open()
+      if err != nil {
+         Goose.ClientCfg.Logf(0,"Error opening %s: %s",f.Name,err)
+         return err
+      }
+
+      switch f.Name {
+         case "client.crt":
+            _, cert, err = cfg.Certkit.ReadCertFromReader(rc)
+         case "client.key":
+            _, key, err = cfg.Certkit.ReadDecryptRsaPrivKeyFromReader(rc)
+      }
+      rc.Close()
+
+      if err != nil {
+         Goose.ClientCfg.Logf(0,"Error loading %s: %s",f.Name,err)
+         return err
+      }
+   }
+   cfg.ClientCert, err = tls.X509KeyPair(cert, key)
+   if err != nil {
+      Goose.ClientCfg.Logf(0,"Error setting client keypair: %s",err)
       return err
    }
 
-
-   pemblockkey, _ = pem.Decode(key)
-
-   plainkey, err = x509.DecryptPEMBlock(pemblockkey,[]byte{})
-   if err != nil {
-      return err
-   }
-
-   rsakey, err = x509.ParsePKCS1PrivateKey(plainkey)
-   if err != nil {
-      return err
-   }
-
-   pemblockcert, _ = pem.Decode(cert)
-
-//   fmt.Printf("%s\n\n%#v\n",plainkey,pemblockkey)
-
-/*
-   // Load client cert
-   cfg.ClientCert, err = tls.X509KeyPair(cert, plainkey)
-   if err != nil {
-      return err
-   }
-*/
-
-   cfg.ClientCert = tls.Certificate{
-      Certificate: [][]byte{pemblockcert.Bytes},
-      PrivateKey: rsakey,
-   }
-
-   // Load CA cert
-   caCert, err = ioutil.ReadFile(cfg.Pem + "/rootCA.crt")
-   if err != nil {
-      return err
-   }
-   cfg.ClientCA = x509.NewCertPool()
-   cfg.ClientCA.AppendCertsFromPEM(caCert)
-
-//   fmt.Printf("%#v\n\n%#v\n",cfg.ClientCert,cfg.ClientCA)
+   cfg.ClientCA   = cfg.Certkit.GetCertPool()
 
    return nil
 }

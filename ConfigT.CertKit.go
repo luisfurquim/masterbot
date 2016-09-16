@@ -1,10 +1,10 @@
 package masterbot
 
 import (
-   "github.com/luisfurquim/stonelizard/certkit"
+   "github.com/luisfurquim/stonelizard"
 )
 
-func (cfg ConfigT) CertKit() *certkit.CertKit {
+func (cfg ConfigT) CertKit() stonelizard.AuthT {
    return cfg.Certkit
 }
 

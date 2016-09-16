@@ -8,7 +8,7 @@ import (
    "crypto/tls"
    "crypto/x509"
    "golang.org/x/crypto/ssh"
-   "github.com/luisfurquim/stonelizard/certkit"
+   "github.com/luisfurquim/stonelizard"
 )
 
 type StatusT struct {
@@ -43,25 +43,25 @@ type BotClientsT map[string]BotClientPtr
 type Timeout time.Duration
 
 type ConfigT struct {
-   Id               string           `json:"id"`
-   Host             Hosts            `json:"host"`
-   SysUser          string           `json:"sysuser"`
-   WorkDir          string           `json:"workdir"`
-   Listen           string           `json:"listen"`
-   CrlListen        string           `json:"crllisten"`
-   PageNotFoundPath string           `json:"pageNotFound"`
-   Pem              string           `json:"pem"`
-   BinDir           string           `json:"bindir"`
-   BinName          string           `json:"binname"`
-   ClientCert       tls.Certificate  `json:"-"`
-   ClientCA        *x509.CertPool    `json:"-"`
-   Bot              BotClientsT      `json:"bot"`
-   SshClientConfig *ssh.ClientConfig `json:"-"`
-   BotPingRate      string           `json:"botpingrate"`
-   BotCommTimeout   Timeout          `json:"botcommtimeout"`
-   HttpsPingClient *http.Client      `json:"-"`
-   HttpsStopClient *http.Client      `json:"-"`
-   Certkit         *certkit.CertKit  `json:"-"`
+   Id               string            `json:"id"`
+   Host             Hosts             `json:"host"`
+   SysUser          string            `json:"sysuser"`
+   WorkDir          string            `json:"workdir"`
+   Listen           string            `json:"listen"`
+   CrlListen        string            `json:"crllisten"`
+   PageNotFoundPath string            `json:"pageNotFound"`
+   Pem              string            `json:"pem"`
+   BinDir           string            `json:"bindir"`
+   BinName          string            `json:"binname"`
+   ClientCert       tls.Certificate   `json:"-"`
+   ClientCA        *x509.CertPool     `json:"-"`
+   Bot              BotClientsT       `json:"bot"`
+   SshClientConfig *ssh.ClientConfig  `json:"-"`
+   BotPingRate      string            `json:"botpingrate"`
+   BotCommTimeout   Timeout           `json:"botcommtimeout"`
+   HttpsPingClient *http.Client       `json:"-"`
+   HttpsStopClient *http.Client       `json:"-"`
+   Certkit          stonelizard.AuthT `json:"-"`
 }
 
 const (
