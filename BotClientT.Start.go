@@ -3,7 +3,8 @@ package masterbot
 import (
    "os"
    "fmt"
-   "sync"
+//   "sync"
+//   "bytes"
 //   "strings"
 //   "net/http"
    "golang.org/x/crypto/ssh"
@@ -13,7 +14,7 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    var err        error
    var sshclient *ssh.Client
    var session   *ssh.Session
-   var wg         sync.WaitGroup
+//   var wg         sync.WaitGroup
    var cmd        string
 
    if s.Host[botInstance].Status == BotStatPaused {
@@ -42,6 +43,9 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
       Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
       return ErrDialingToBot
    }
+   defer sshclient.Close()
+
+   Goose.StartStop.Logf(3,"Dialed to bot %s@%s",botId,s.Host[botInstance].Name)
 
    session, err = sshclient.NewSession()
    if err != nil {
@@ -50,7 +54,9 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    }
    defer session.Close()
 
+   Goose.StartStop.Logf(3,"Session started at bot %s@%s",botId,s.Host[botInstance].Name)
 
+/*
    wg.Add(1)
 
    go func() {
@@ -60,14 +66,38 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
       Goose.StartStop.Logf(2,"Closing stdin for bot %s",botId)
       //fmt.Fprintf(w, "%s\n", config)
    }()
+*/
+
+/*
+   // Set up terminal modes
+   modes := ssh.TerminalModes{
+      ssh.ECHO:          0,     // disable echoing
+      ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
+      ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+   }
+   // Request pseudo terminal
+   if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+      Goose.StartStop.Fatalf(1,"request for pseudo terminal failed: %s", err)
+   }
+
+
+   session.Stdout = &bytes.Buffer{}
+   session.Stderr = &bytes.Buffer{}
+*/
 
    cmd = fmt.Sprintf("%s%c%s -v %d %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, cmdline)
-   if err = session.Start(cmd); err != nil {
+   Goose.StartStop.Logf(3,"Will run %s@%s using %s", botId, s.Host[botInstance].Name, cmd)
+
+   err = session.Start(cmd)
+//   err = session.Run(cmd)
+   Goose.StartStop.Logf(2,"Running bot %s",botId)
+//   wg.Wait()
+
+   if err != nil {
+      session.Signal(ssh.SIGKILL)
       Goose.StartStop.Logf(1,"%s (%s)",ErrFailedStartingBot,err)
       return ErrFailedStartingBot
    }
-
-   wg.Wait()
 
    Goose.StartStop.Logf(2,"Started bot %s with cmd:[%s]",botId,cmd)
 
