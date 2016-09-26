@@ -20,13 +20,13 @@ func (cfg *ConfigT) LoadClientCert() error {
 
    hn, err = os.Hostname()
    if err != nil {
-      Goose.ClientCfg.Logf(0,"Error checking hostname: %s",err)
+      Goose.ClientCfg.Logf(1,"Error checking hostname: %s",err)
       return err
    }
 
    r, err := zip.OpenReader(fmt.Sprintf("%s%c%s.ck",cfg.Pem, os.PathSeparator,hn))
    if err != nil {
-      Goose.ClientCfg.Logf(0,"Error decompressing certificate archive: %s",err)
+      Goose.ClientCfg.Logf(1,"Error decompressing certificate archive: %s",err)
       return err
    }
    defer r.Close()
@@ -35,7 +35,7 @@ func (cfg *ConfigT) LoadClientCert() error {
    for _, f := range r.File {
       rc, err := f.Open()
       if err != nil {
-         Goose.ClientCfg.Logf(0,"Error opening %s: %s",f.Name,err)
+         Goose.ClientCfg.Logf(1,"Error opening %s: %s",f.Name,err)
          return err
       }
 
@@ -48,13 +48,13 @@ func (cfg *ConfigT) LoadClientCert() error {
       rc.Close()
 
       if err != nil {
-         Goose.ClientCfg.Logf(0,"Error loading %s: %s",f.Name,err)
+         Goose.ClientCfg.Logf(1,"Error loading %s: %s",f.Name,err)
          return err
       }
    }
    cfg.ClientCert, err = tls.X509KeyPair(cert, key)
    if err != nil {
-      Goose.ClientCfg.Logf(0,"Error setting client keypair: %s",err)
+      Goose.ClientCfg.Logf(1,"Error setting client keypair: %s",err)
       return err
    }
 
