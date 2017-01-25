@@ -25,7 +25,7 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
    var provider      ProviderT
    var opParm        stonelizard.SwaggerParameterT
    var method        string
-   var operation     stonelizard.SwaggerOperationT
+   var operation    *stonelizard.SwaggerOperationT
    var httpStatus    string
    var opResp        stonelizard.SwaggerResponseT
    var prop          string
@@ -105,7 +105,7 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                            BotId:          bot,
                            Path:           swagger.BasePath + path,
                            HttpMethod:     strings.ToUpper(method),
-                           Operation:      operation,
+                           Operation:     *operation,
                            Requires:      &intsets.Sparse{},
                            Provides:      &intsets.Sparse{},
                         }
