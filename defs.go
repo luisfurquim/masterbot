@@ -56,10 +56,10 @@ type ConfigT struct {
    BinName          string            `json:"binname"`
    ClientCert       tls.Certificate   `json:"-"`
    ClientCA        *x509.CertPool     `json:"-"`
-   Bot              BotClientsT       `json:"bot"`
+   Bot              BotClientsT       `json:"bot,omitempty"`
    SshClientConfig *ssh.ClientConfig  `json:"-"`
-   BotPingRate      string            `json:"botpingrate"`
-   BotCommTimeout   Timeout           `json:"botcommtimeout"`
+   BotPingRate      string            `json:"botpingrate,omitempty"`
+   BotCommTimeout   Timeout           `json:"botcommtimeout,omitempty"`
    HttpsPingClient *http.Client       `json:"-"`
    HttpsStopClient *http.Client       `json:"-"`
    Certkit          stonelizard.AuthT `json:"-"`
