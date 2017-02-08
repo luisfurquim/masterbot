@@ -16,6 +16,9 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    var session   *ssh.Session
 //   var wg         sync.WaitGroup
    var cmd        string
+   var sshport    string
+
+   sshport = SSHPort
 
    if s.Host[botInstance].Status == BotStatPaused {
       return nil
@@ -38,14 +41,18 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
 
    cfg.SshClientConfig.User   = s.SysUser
 
-   sshclient, err = ssh.Dial("tcp", s.Host[botInstance].Name + ":22", cfg.SshClientConfig)
+   if s.Host[botInstance].Port != "" {
+      sshport = s.Host[botInstance].Port
+   }
+
+   sshclient, err = ssh.Dial("tcp", s.Host[botInstance].Name + ":" + sshport, cfg.SshClientConfig)
    if err != nil {
       Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
       return ErrDialingToBot
    }
    defer sshclient.Close()
 
-   Goose.StartStop.Logf(3,"Dialed to bot %s@%s",botId,s.Host[botInstance].Name)
+   Goose.StartStop.Logf(3,"Dialed to bot %s@%s:%s",botId,s.Host[botInstance].Name,sshport)
 
    session, err = sshclient.NewSession()
    if err != nil {
@@ -54,7 +61,7 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    }
    defer session.Close()
 
-   Goose.StartStop.Logf(3,"Session started at bot %s@%s",botId,s.Host[botInstance].Name)
+   Goose.StartStop.Logf(3,"Session started at bot %s@%s:%s",botId,s.Host[botInstance].Name,sshport)
 
 /*
    wg.Add(1)
@@ -86,7 +93,7 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
 */
 
    cmd = fmt.Sprintf("%s%c%s -v %d %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, cmdline)
-   Goose.StartStop.Logf(3,"Will run %s@%s using %s", botId, s.Host[botInstance].Name, cmd)
+   Goose.StartStop.Logf(3,"Will run %s@%s:%s using %s", botId, s.Host[botInstance].Name, sshport, cmd)
 
    err = session.Start(cmd)
 //   err = session.Run(cmd)

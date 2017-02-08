@@ -18,6 +18,7 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
    var host        Host
    var multiErr  []error
    var botInstance int
+   var sshport     string
 
    err = cfg.PingAt()
    if err == nil {
@@ -41,7 +42,12 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
             return
          }
 
-         sshclient, err = ssh.Dial("tcp", thishost.Name + ":22", cfg.SshClientConfig)
+         sshport = SSHPort
+         if thishost.Port != "" {
+            sshport = thishost.Port
+         }
+
+         sshclient, err = ssh.Dial("tcp", thishost.Name + ":" + sshport, cfg.SshClientConfig)
          if err != nil {
             Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
             multiErr[instance] = ErrDialingToBot

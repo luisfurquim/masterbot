@@ -19,6 +19,7 @@ type StatusT struct {
 
 type Host struct {
    Name    string        `json:"name"`
+   Port    string        `json:"port"` // Used when the SSH port is non standard
    StatusT
 }
 
@@ -71,6 +72,7 @@ const (
    BotStatUnreachable string = "U"
 )
 
+const SSHPort string = "22"
 
 type ServiceT struct {
    // end point for monitoring
