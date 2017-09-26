@@ -1,6 +1,7 @@
 package masterbot
 
 import (
+   "net"
    "io/ioutil"
    "golang.org/x/crypto/ssh"
 )
@@ -29,6 +30,9 @@ func (cfg *ConfigT) NewSshClientConfig(privKeyPath string) error {
       Auth: []ssh.AuthMethod{
          ssh.PublicKeys(signer),
       },
+      HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			return nil
+		},
    }
 
    return nil

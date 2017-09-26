@@ -10,7 +10,7 @@ func (t *TaxonomyTreeT) Add(item string) int {
    var p, p2 *TaxonomyTreeT
    var sp2    string
 
-   Goose.Taxonomy.Logf(3,"Will search taxonomy: %s", item)
+   Goose.Taxonomy.Logf(2,"Will search taxonomy: %s", item)
 
    i, p, p2 = t.Search(item)
 
@@ -44,13 +44,13 @@ func (t *TaxonomyTreeT) Add(item string) int {
       p = p2
    }
 
-   Goose.Taxonomy.Logf(3,"Item added: p=%#v",*p)
+   Goose.Taxonomy.Logf(3,"Item %s added: p=%#v", item, *p)
    if p2 != nil {
       sp2 = fmt.Sprintf("%#v",*p2)
    } else {
       sp2 = "nil"
    }
-   Goose.Taxonomy.Logf(3,"Item added: p2=%s",sp2)
+   Goose.Taxonomy.Logf(2,"Item %s added: p2=%s",item, sp2)
 
    p2.Id = t.Id
    t.Id++

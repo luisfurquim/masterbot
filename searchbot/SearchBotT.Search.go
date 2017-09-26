@@ -7,7 +7,7 @@ import (
    "strings"
    "net/url"
    "net/http"
-//   "io/ioutil"
+   "io/ioutil"
    "encoding/json"
    "encoding/xml"
 //   "github.com/luisfurquim/masterbot"
@@ -71,33 +71,38 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
       }
    }
 
-   Goose.Search.Logf(4,"TID:%s Determined if there is at least one bot providing all data needed (isFragmented=%#v): %#v", tid, isFragmented, providers)
+   Goose.Search.Logf(4,"TID:%s Determined if there is at least one bot providing all data needed (isFragmented=%#v): %#v", tid, isFragmented, providers.String())
 
    if !isFragmented {
       // Select in the bots that have all information needed
       // those who require only information we have
       searchFields = &intsets.Sparse{}
       for field, _ = range searchBy {
+         Goose.Search.Logf(6,"TID:%s sb.Taxonomy.Search(%s)", tid, field)
          i, _, p = sb.Taxonomy.Search(field)
-         searchFields.Insert(p.Id)
+         Goose.Search.Logf(6,"TID:%s i=%d, p=%#v", tid, i, p)
+         if p != nil {
+            Goose.Search.Logf(3,"TID:%s Selecting new search field %s", tid, field)
+            searchFields.Insert(p.Id)
+         }
       }
 
-      Goose.Search.Logf(4,"TID:%s Bitstring of search created: %#v", tid, searchFields)
+      Goose.Search.Logf(4,"TID:%s Bitstring of search created: %#v", tid, searchFields.String())
 
       oneShotProviders = &intsets.Sparse{}
       commonFields     = &intsets.Sparse{}
 
       Goose.Search.Logf(4,"TID:%s providers.Max(): %d", tid, providers.Max())
       for i=0; i <= providers.Max(); i++ {
-         Goose.Search.Logf(4,"TID:%s Bitstring of sb.Providers[%d].Requires: %#v",tid,i,sb.Providers[i].Requires)
+         Goose.Search.Logf(4,"TID:%s sb.Providers[%d].Requires: %s",tid,i,sb.Providers[i].Requires.String())
          commonFields.Intersection(searchFields,sb.Providers[i].Requires)
          if commonFields.Len() == sb.Providers[i].Requires.Len() {
-            Goose.Search.Logf(4,"TID:%s Intersection at %d",tid,i)
+            Goose.Search.Logf(3,"TID:%s Intersection at %d",tid,i)
             oneShotProviders.Insert(i)
          }
       }
 
-      Goose.Search.Logf(4,"TID:%s Bitstring of oneShotProviders: %#v",tid,oneShotProviders)
+      Goose.Search.Logf(4,"TID:%s oneShotProviders: %s",tid,oneShotProviders.String())
 
       // If there is at least one bot who gives all fields
       // we need and requires just fields we already have...
@@ -118,10 +123,10 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
                   var resp                  *http.Response
                   var qryResponse map[string]ResponseFieldT
                   var nHost                  int
-//                  var buf             []byte
+//                  var buf                  []byte
 //                  var n                 int
 
-                  Goose.Search.Logf(1,"TID:%s searching instance %d: ",tid,instance)
+                  Goose.Search.Logf(2,"TID:%s searching instance %d: ",tid,instance)
 
                   defer func() { rep<- qryResponse }()
 
@@ -225,10 +230,18 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
 //                     tmpbody, _ :=ioutil.ReadAll(resp.Body)
 //                     Goose.Search.Logf(4,"TID:%s Response: %s",tid,tmpbody)
 
+                     b_body, err = ioutil.ReadAll(resp.Body)
+                     if err != nil {
+                        Goose.Search.Logf(1,"TID:%s %s: %s",tid,err,b_body)
+                        return
+                     }
+
+                     Goose.Search.Logf(1,"TID:%s body: %s",tid,b_body)
+
                      if sb.Providers[instance].Operation.Produces[0] == "application/json" {
-                        err = json.NewDecoder(resp.Body).Decode(&body)
+                        err = json.NewDecoder(bytes.NewReader(b_body)).Decode(&body)
                      } else if sb.Providers[instance].Operation.Produces[0] == "application/xml" {
-                        err = xml.NewDecoder(resp.Body).Decode(&body)
+                        err = xml.NewDecoder(bytes.NewReader(b_body)).Decode(&body)
                      }
 
                      Goose.Search.Logf(4,"TID:%s Response body: %#v",tid,body)

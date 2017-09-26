@@ -49,7 +49,7 @@ func (cfg *ConfigT) Start(cmdline string, dbgLevel int) error {
 
          sshclient, err = ssh.Dial("tcp", thishost.Name + ":" + sshport, cfg.SshClientConfig)
          if err != nil {
-            Goose.StartStop.Logf(1,"%s (%s)",ErrDialingToBot,err)
+            Goose.StartStop.Logf(1,"%s %s (%s)", ErrDialingToBot, thishost.Name + ":" + sshport, err)
             multiErr[instance] = ErrDialingToBot
             return
          }
