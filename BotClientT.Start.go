@@ -92,7 +92,7 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    session.Stderr = &bytes.Buffer{}
 */
 
-   cmd = fmt.Sprintf("%s%c%s -v %d %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, cmdline)
+   cmd = fmt.Sprintf("%s%c%s -v %d -path %s %s",s.BinDir, os.PathSeparator, s.BinName, debugLevel, s.WorkDir, cmdline)
    Goose.StartStop.Logf(3,"Will run %s@%s:%s using %s", botId, s.Host[botInstance].Name, sshport, cmd)
 
    err = session.Start(cmd)

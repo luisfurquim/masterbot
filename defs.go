@@ -31,6 +31,7 @@ type BotClientT struct {
    Listen        string        `json:"listen"`
    Host          Hosts         `json:"host"`
    SysUser       string        `json:"sysuser"`
+   WorkDir       string        `json:"workdir"`
    SearchPath    string        `json:"searchpath"`
    SearchPathRE *regexp.Regexp `json:"-"`
    StatusT

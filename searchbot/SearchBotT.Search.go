@@ -52,7 +52,9 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
    // Determine if there is at least one bot providing all data needed
    // by repeatedly computing providers ∩= 'providers of a given field'
    for _, field = range searchFor {
+      Goose.Search.Logf(0,"TID:%s will constrain by %s", tid, field)
       i, _, p = sb.Taxonomy.Search(field)
+      Goose.Search.Logf(0,"TID:%s field %s has id=%d", tid, field, p.Id)
       if ((i+1)!=len(field)) || (p==nil) || (p.Id<0) {
          Goose.Search.Logf(1,"TID:%s %s: %s", tid, ErrUndefinedField, field)
          return stonelizard.Response{
@@ -69,6 +71,7 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
          isFragmented = true
          break
       }
+      Goose.Search.Logf(0,"TID:%s constraining by %s gives %s", tid, field, providers)
    }
 
    Goose.Search.Logf(4,"TID:%s Determined if there is at least one bot providing all data needed (isFragmented=%#v): %#v", tid, isFragmented, providers.String())
@@ -82,7 +85,7 @@ func (sb *SearchBotT) Search(searchBy map[string]string, searchFor []string, log
          i, _, p = sb.Taxonomy.Search(field)
          Goose.Search.Logf(6,"TID:%s i=%d, p=%#v", tid, i, p)
          if p != nil {
-            Goose.Search.Logf(3,"TID:%s Selecting new search field %s", tid, field)
+            Goose.Search.Logf(3,"TID:%s Selecting new search field %s with id=%d", tid, field, p.Id)
             searchFields.Insert(p.Id)
          }
       }

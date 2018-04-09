@@ -54,10 +54,20 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
          res.ByRequirement = map[int]*intsets.Sparse{}
 
          for bot, botCfg = range cfg.Bot {
+            if botCfg.Status == "P" {
+               Goose.Taxonomy.Logf(2,"Skipping paused bot %s",bot)
+               continue
+            }
+
             for _, host = range botCfg.Host {
                err = func () error {
                   var url        string
                   var err        error
+
+                  if host.Status == "P" {
+                     Goose.Taxonomy.Logf(2,"Skipping paused bot instance %s",host.Name)
+                     return nil
+                  }
 
                   url   = fmt.Sprintf("https://%s%s/swagger.json", host.Name, botCfg.Listen)
                   Goose.Taxonomy.Logf(2,"fetching swagger.json via %s",url)
@@ -113,7 +123,29 @@ func New(cfg *masterbot.ConfigT) (*SearchBotT, error) {
                            if httpStatus[0] == '2' {
                               Goose.Taxonomy.Logf(7,"Testing response: %s",httpStatus)
                               if opResp.Schema != nil {
-                                 for prop, _ = range opResp.Schema.Properties {
+                                 if opResp.Schema.Properties != nil {
+                                    for prop, _ = range opResp.Schema.Properties {
+                                       Goose.Taxonomy.Logf(7,"found prop: %s",prop)
+                                       fieldId = res.Taxonomy.Add(prop)
+         //                              _, _, pTmp := res.Taxonomy.Search(prop)
+         //                              Goose.Taxonomy.Logf(4,"Added Taxonomy: %s as %d, search reports it is %d",prop,fieldId,pTmp.Id)
+                                       Goose.Taxonomy.Logf(7,"Taxonomy: %s",res.Taxonomy)
+                                       provider.Provides.Insert(fieldId)
+                                    }
+                                 } else if opResp.Schema.Items != nil {
+                                    items := *opResp.Schema.Items
+                                    if items.Type == "object" {
+                                       for prop, _ = range items.Properties {
+                                          Goose.Taxonomy.Logf(7,"found prop: %s",prop)
+                                          fieldId = res.Taxonomy.Add(prop)
+            //                              _, _, pTmp := res.Taxonomy.Search(prop)
+            //                              Goose.Taxonomy.Logf(4,"Added Taxonomy: %s as %d, search reports it is %d",prop,fieldId,pTmp.Id)
+                                          Goose.Taxonomy.Logf(7,"Taxonomy: %s",res.Taxonomy)
+                                          provider.Provides.Insert(fieldId)
+                                       }
+                                    }
+                                 } else {
+                                    prop = opResp.Schema.Title
                                     Goose.Taxonomy.Logf(7,"found prop: %s",prop)
                                     fieldId = res.Taxonomy.Add(prop)
       //                              _, _, pTmp := res.Taxonomy.Search(prop)
