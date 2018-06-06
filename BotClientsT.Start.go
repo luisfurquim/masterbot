@@ -14,7 +14,6 @@ func (bc *BotClientsT) Start(config *ConfigT, cmdline string, debugLevel int) {
    Goose.Ping.Logf(2,"Registering ping jobs [%s]",config.BotPingRate)
 
    for botId, botCfg = range *bc {
-
       if botCfg.Status == BotStatPaused {
          continue
       }
@@ -32,8 +31,8 @@ func (bc *BotClientsT) Start(config *ConfigT, cmdline string, debugLevel int) {
          botCfg.CronPingFn[botInstance] = (func(bot *BotClientT, cmd string, id string, instance int) (func()) {
             return func() {
                var err        error
-
-               if botCfg.Status ==  BotStatPaused {
+					//Testing botCfg.Status==BotStatStopped to prevent start bot from cron scheduling.
+               if botCfg.Status ==  BotStatPaused || botCfg.Status == BotStatStopped {
                   return
                }
 

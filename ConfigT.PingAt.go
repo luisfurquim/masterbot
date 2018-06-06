@@ -56,6 +56,7 @@ func (cfg *ConfigT) PingAt() error {
             Goose.Ping.Logf(1,"%s %s@%s at %s (not running)",ErrFailedPingingBot,cfg.Id,host.Name,url)
             Goose.Ping.Logf(1,"%#v",cfg.Host)
             botError[instance] = ErrFailedPingingBot
+            //Goose.Ping.Logf(1,"Ignore Ping Bot to %s@%s at %s because Status = %s",cfg.Id,host.Name,url,host.Status)
          }
       }(botInstance,host)
    }
