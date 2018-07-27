@@ -64,6 +64,7 @@ type ConfigT struct {
    HttpsPingClient *http.Client       `json:"-"`
    HttpsStopClient *http.Client       `json:"-"`
    Certkit          stonelizard.AuthT `json:"-"`
+   Transport		 *http.Transport		`rset:"-"`
 }
 
 const (
