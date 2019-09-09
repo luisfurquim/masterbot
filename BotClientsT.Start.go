@@ -46,7 +46,21 @@ func (bc *BotClientsT) Start(config *ConfigT, cmdline string, debugLevel int) {
          if err != nil {
             Goose.Ping.Logf(1,"Error scheduling bot %s@%s ping job (%s)",botId,botCfg.Host[botInstance],err)
          } else {
-            go botCfg.CronPingFn[botInstance]()
+				//33-42 exceto o if c paused go func(boInstance como parametro)
+				
+				 go func (bot *BotClientT, cmd string, id string, instance int) {
+				  	var err        error
+						//Testing botCfg.Status==BotStatPaused to prevent start bot from cron scheduling.
+						if botCfg.Status == BotStatPaused {
+							return
+						}
+
+						err = bot.Start(id,instance,cmd,config,debugLevel)
+						if err != nil {
+							Goose.StartStop.Logf(1,"Error starting bot %s@%s (%s)",id,bot.Host[instance].Name,err)
+						}
+				  } (botCfg,cmdline,botId,botInstance) // Closure to avoid direct access to bc and having it changing from time to time
+            //go botCfg.CronPingFn[botInstance]()
          }
       }
 

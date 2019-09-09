@@ -19,7 +19,7 @@ func (cfg *ConfigT) PingAt() error {
       Goose.Ping.Logf(1,"%s",ErrNoBotsToPing)
       return ErrNoBotsToPing
    }
-
+	
    wg.Add(len(cfg.Host))
 
    botError = make([]error,len(cfg.Host))
@@ -32,11 +32,10 @@ func (cfg *ConfigT) PingAt() error {
          defer wg.Done()
 
          if host.Status == BotStatRunning {
-
             url   = fmt.Sprintf("https://%s%s/%s/ping", host.Name, cfg.Listen, cfg.Id)
+            Goose.Ping.Logf(6, "HttpsClient=%p, %#v, %T", cfg.HttpsPingClient, cfg.HttpsPingClient, *cfg.HttpsPingClient)
             Goose.Ping.Logf(6,"Pinging bot at %s using %v",url,cfg.HttpsPingClient)
             resp, err = cfg.HttpsPingClient.Get(url)
-
             if resp != nil {
                defer resp.Body.Close()
             }
@@ -54,7 +53,7 @@ func (cfg *ConfigT) PingAt() error {
             }
          } else {
             Goose.Ping.Logf(1,"%s %s@%s at %s (not running)",ErrFailedPingingBot,cfg.Id,host.Name,url)
-            Goose.Ping.Logf(1,"%#v",cfg.Host)
+            Goose.Ping.Logf(6,"%#v",cfg.Host)
             botError[instance] = ErrFailedPingingBot
             //Goose.Ping.Logf(1,"Ignore Ping Bot to %s@%s at %s because Status = %s",cfg.Id,host.Name,url,host.Status)
          }

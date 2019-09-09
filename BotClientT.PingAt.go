@@ -12,7 +12,7 @@ func (s *BotClientT) PingAt(botId string, botInstance int, cfg *ConfigT) error {
    var resp       *http.Response
    var url         string
 
-   Goose.Ping.Logf(3,"Pinging %s@%s",botId,s.Host[botInstance].Name)
+   Goose.Ping.Logf(2,"Pinging %s@%s",botId,s.Host[botInstance].Name)
    url = fmt.Sprintf("https://%s%s/%s/ping", s.Host[botInstance].Name, s.Listen, botId)
    resp, err = cfg.HttpsPingClient.Get(url)
 

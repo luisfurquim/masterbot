@@ -16,8 +16,26 @@ func (cfg ConfigT) HttpsClient(tmout time.Duration) *http.Client {
       RootCAs:      cfg.ClientCA,
       InsecureSkipVerify: true,
    }
+   
+  	Goose.Ping.Logf(3, "Construindo NametoCertificate \n")
    tlsConfig.BuildNameToCertificate()
 
+   Goose.Ping.Logf(3, "Definicao do httpclient apos definicao tlsCfg\n") 
+   /*
+   httpclient = http.Client{
+     Transport: &http.Transport{
+        TLSClientConfig:     tlsConfig,
+        DisableCompression:  true,
+        Dial: (&net.Dialer{
+           Timeout:   tmout,
+           KeepAlive: 30 * time.Second,
+        }).Dial,
+        TLSHandshakeTimeout: 10 * time.Second,
+     },
+     Timeout:	tmout,
+  }
+   
+*/
    httpclient = http.Client{
       Transport: &http.Transport{
          TLSClientConfig:     tlsConfig,
@@ -31,5 +49,6 @@ func (cfg ConfigT) HttpsClient(tmout time.Duration) *http.Client {
       }
    }
 
+	Goose.Ping.Logf(6, "HttpsClient=%p, %#v, %T", &httpclient, &httpclient, httpclient)
    return &httpclient
 }
