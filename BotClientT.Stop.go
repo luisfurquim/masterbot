@@ -21,6 +21,14 @@ func (svc *BotClientT) Stop(botId string, cfg *ConfigT, botInstance int) error {
    for i, _ = range svc.Host{
       if (botInstance<0) || (botInstance==i) {
          if svc.Host[i].Status == BotStatRunning {
+            
+            svc.Host[i].Status = BotStatStopped
+            
+            if svc.Host[i].OnStatUpdate != nil {
+               svc.Host[i].OnStatUpdate(BotStatStopped)
+               Goose.StartStop.Logf(2, "Mudou o status do bot %s para %s na linha 44\n", botId, svc.Host[i].Status)
+            }
+            
             url   = fmt.Sprintf("https://%s%s/%s/stop", svc.Host[i].Name, svc.Listen, botId)
             Goose.StartStop.Logf(2,"Stopping bot %s via %s",botId,url)
             resp, err = htcli.Get(url)
@@ -36,12 +44,7 @@ func (svc *BotClientT) Stop(botId string, cfg *ConfigT, botInstance int) error {
                continue
             }
 			
-            svc.Host[i].Status = BotStatStopped
             
-            if svc.Host[i].OnStatUpdate != nil {
-               svc.Host[i].OnStatUpdate(BotStatStopped)
-               Goose.StartStop.Logf(2, "Mudou o status do bot %s para %s na linha 44\n", botId, svc.Host[i].Status)
-            }
          }
       }
    }

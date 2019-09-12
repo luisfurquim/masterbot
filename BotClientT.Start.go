@@ -19,7 +19,7 @@ func (s *BotClientT) Start(botId string, botInstance int, cmdline string, cfg *C
    var sshport    string
 
    sshport = SSHPort
-   if s.Host[botInstance].Status == BotStatPaused {
+   if s.Host[botInstance].Status == BotStatPaused || s.Host[botInstance].Status == BotStatStopped {
       return nil
    }
 
