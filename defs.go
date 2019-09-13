@@ -70,7 +70,7 @@ type ConfigT struct {
 const (
    BotStatStopped     string = "S"
    BotStatRunning     string = "R"
-   BotStatPaused      string = "P" //Used to enable/disable
+   BotStatPaused      string = "P" //Used to disable
    BotStatUnreachable string = "U"
 )
 
